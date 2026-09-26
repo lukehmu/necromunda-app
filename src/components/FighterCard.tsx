@@ -5,13 +5,13 @@ import {
   MinusIcon,
   PlusIcon,
   ProhibitIcon,
-  TrashIcon,
   XIcon,
 } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
+import { ConfirmButton } from '@/components/ConfirmButton'
 import { Toggle } from '@/components/Toggle'
+import { t } from '@/i18n/en'
 import { useStore } from '@/store'
-import type { Fighter } from '@/types'
+import type { Fighter, Flag } from '@/types'
 
 /** Beyond this many wounds a pip row stops being readable at a glance. */
 const MAX_PIPS = 10
@@ -62,62 +62,17 @@ function StepButton({
   )
 }
 
-/** How long the remove confirmation stays armed before quietly backing off. */
-const CONFIRM_MS = 4000
-
-/**
- * Two-step remove: the first tap arms it, the second removes. Inline rather
- * than a native confirm() so it stays quick at the table and never blocks.
- */
-function RemoveButton({ name, onRemove }: { name: string; onRemove: () => void }) {
-  const [armed, setArmed] = useState(false)
-
-  useEffect(() => {
-    if (!armed) return
-    const timer = setTimeout(() => setArmed(false), CONFIRM_MS)
-    return () => clearTimeout(timer)
-  }, [armed])
-
-  if (!armed) {
-    return (
-      <button
-        type="button"
-        aria-label={`Remove ${name}`}
-        onClick={() => setArmed(true)}
-        className="press grid size-10 shrink-0 place-items-center rounded-[2px] text-hive-400 active:bg-hive-800"
-      >
-        <XIcon size={18} weight="bold" />
-      </button>
-    )
-  }
-
-  return (
-    <div className="flex shrink-0 gap-1">
-      <button
-        type="button"
-        onClick={() => setArmed(false)}
-        className="press well min-h-10 px-3 font-condensed text-sm font-bold tracking-wider text-hive-200 uppercase"
-      >
-        Keep
-      </button>
-      <button
-        type="button"
-        // biome-ignore lint/a11y/noAutofocus: focus follows the tap that armed it
-        autoFocus
-        aria-label={`Confirm remove ${name}`}
-        onClick={onRemove}
-        className="press flex min-h-10 items-center gap-1 rounded-[2px] bg-blood px-3 font-condensed text-sm font-bold tracking-wider text-hive-950 uppercase"
-      >
-        <TrashIcon aria-hidden size={16} weight="bold" />
-        Remove
-      </button>
-    </div>
-  )
-}
+/** Flags with a rules reminder, in display order. Copy lives in `t.tips`. */
+const TIP_FLAGS = [
+  { flag: 'suppressed', className: 'text-toxin' },
+  { flag: 'outOfAmmo', className: 'text-hive-400' },
+  { flag: 'injured', className: 'text-blood' },
+] as const satisfies readonly { flag: Exclude<Flag, 'activated'>; className: string }[]
 
 export function FighterCard({ fighter }: { fighter: Fighter }) {
   const { dispatch } = useStore()
   const zero = fighter.wounds === 0
+  const tips = TIP_FLAGS.filter((tip) => fighter[tip.flag])
 
   return (
     <li
@@ -126,19 +81,24 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
       <div className="flex items-center gap-2 pl-2">
         <input
           value={fighter.name}
-          aria-label="Fighter name"
+          aria-label={t.fighter.nameLabel}
           onChange={(e) => dispatch({ type: 'rename', id: fighter.id, name: e.target.value })}
           className="min-w-0 flex-1 rounded-[2px] bg-transparent py-1 font-condensed text-xl font-bold tracking-wide text-hive-200 uppercase outline-none focus:bg-hive-800"
         />
-        <RemoveButton
-          name={fighter.name}
-          onRemove={() => dispatch({ type: 'remove', id: fighter.id })}
-        />
+        <ConfirmButton
+          idleAriaLabel={t.fighter.remove(fighter.name)}
+          idleClassName="press grid size-10 shrink-0 place-items-center rounded-[2px] text-hive-400 active:bg-hive-800"
+          confirmLabel={t.fighter.removeConfirm}
+          confirmAriaLabel={t.fighter.confirmRemove(fighter.name)}
+          onConfirm={() => dispatch({ type: 'remove', id: fighter.id })}
+        >
+          <XIcon size={18} weight="bold" />
+        </ConfirmButton>
       </div>
 
       <div className="mt-2 flex items-center gap-3">
         <StepButton
-          label={`Lose a wound: ${fighter.name}`}
+          label={t.fighter.loseWound(fighter.name)}
           disabled={zero}
           onClick={() => dispatch({ type: 'adjustWounds', id: fighter.id, delta: -1 })}
         >
@@ -160,7 +120,7 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
               min={1}
               max={20}
               value={fighter.maxWounds}
-              aria-label="Total wounds"
+              aria-label={t.fighter.totalWoundsLabel}
               onChange={(e) =>
                 dispatch({
                   type: 'setMaxWounds',
@@ -171,14 +131,14 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
               className="w-10 rounded-[2px] bg-transparent font-condensed text-lg font-semibold text-hive-400 tabular-nums outline-none focus:bg-hive-800"
             />
             <span className="ml-auto font-condensed text-xs font-semibold tracking-[0.14em] text-hive-400 uppercase">
-              Wounds
+              {t.fighter.wounds}
             </span>
           </div>
           <WoundPips fighter={fighter} />
         </div>
 
         <StepButton
-          label={`Restore a wound: ${fighter.name}`}
+          label={t.fighter.restoreWound(fighter.name)}
           disabled={fighter.wounds >= fighter.maxWounds}
           onClick={() => dispatch({ type: 'adjustWounds', id: fighter.id, delta: 1 })}
         >
@@ -188,28 +148,28 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
 
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Toggle
-          label="Activated"
+          label={t.flags.activated}
           icon={LightningIcon}
           tone="hazard"
           active={fighter.activated}
           onToggle={() => dispatch({ type: 'toggle', id: fighter.id, flag: 'activated' })}
         />
         <Toggle
-          label="Suppressed"
+          label={t.flags.suppressed}
           icon={CrosshairSimpleIcon}
           tone="toxin"
           active={fighter.suppressed}
           onToggle={() => dispatch({ type: 'toggle', id: fighter.id, flag: 'suppressed' })}
         />
         <Toggle
-          label="No ammo"
+          label={t.flags.outOfAmmo}
           icon={ProhibitIcon}
           tone="steel"
           active={fighter.outOfAmmo}
           onToggle={() => dispatch({ type: 'toggle', id: fighter.id, flag: 'outOfAmmo' })}
         />
         <Toggle
-          label="Injured"
+          label={t.flags.injured}
           icon={FirstAidIcon}
           tone="blood"
           active={fighter.injured}
@@ -217,10 +177,14 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
         />
       </div>
 
-      {fighter.suppressed && (
-        <p className="mt-3 border-t border-hive-700 pt-2 text-sm text-toxin">
-          Only 1 action when activated. Clears once they have.
-        </p>
+      {tips.length > 0 && (
+        <ul className="mt-3 space-y-1.5 border-t border-hive-700 pt-2 text-sm">
+          {tips.map((tip) => (
+            <li key={tip.flag} className={tip.className}>
+              {t.tips[tip.flag]}
+            </li>
+          ))}
+        </ul>
       )}
     </li>
   )

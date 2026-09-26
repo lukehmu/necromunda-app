@@ -12,6 +12,9 @@ const base = process.env.BASE_PATH ?? '/necromunda-app/'
 // workflow derives it from the repository so a rename needs no code change.
 const siteUrl = process.env.SITE_URL ?? `https://lukehmu.github.io${base}`
 
+// Source repository, linked from the settings panel. Also workflow-derived.
+const repoUrl = process.env.REPO_URL ?? 'https://github.com/lukehmu/necromunda-app'
+
 /** Copy shared by the HTML head, social cards and the PWA manifest. */
 const site = {
   name: 'Necromunda Gang Tracker',
@@ -67,6 +70,9 @@ function siteMeta(): Plugin {
 
 export default defineConfig({
   base,
+  define: {
+    __REPO_URL__: JSON.stringify(repoUrl),
+  },
   plugins: [
     siteMeta(),
     react(),

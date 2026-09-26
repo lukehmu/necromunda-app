@@ -1,8 +1,10 @@
-import { CaretDownIcon, GearSixIcon } from '@phosphor-icons/react'
+import { ArrowUpRightIcon, CaretDownIcon, GearSixIcon, GithubLogoIcon } from '@phosphor-icons/react'
 import { AddFighterForm } from '@/components/AddFighterForm'
+import { ConfirmButton } from '@/components/ConfirmButton'
 import { FighterCard } from '@/components/FighterCard'
 import { ThemeToggle, useAppliedTheme } from '@/components/ThemeToggle'
 import { TurnBar } from '@/components/TurnBar'
+import { t } from '@/i18n/en'
 import { useStore } from '@/store'
 
 export default function App() {
@@ -19,10 +21,8 @@ export default function App() {
 
         {state.fighters.length === 0 ? (
           <div className="border border-dashed border-hive-700 px-6 py-10 text-center">
-            <p className="font-stencil text-3xl text-hive-400 uppercase">Muster your gang</p>
-            <p className="mx-auto mt-2 max-w-[32ch] text-hive-400">
-              Add each fighter with the wounds on their card. Then track the fight turn by turn.
-            </p>
+            <p className="font-stencil text-3xl text-hive-400 uppercase">{t.emptyState.title}</p>
+            <p className="mx-auto mt-2 max-w-[32ch] text-hive-400">{t.emptyState.body}</p>
           </div>
         ) : (
           <ul className="space-y-3">
@@ -35,7 +35,7 @@ export default function App() {
         <details className="group plate">
           <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-5 font-condensed text-sm font-bold tracking-[0.16em] text-hive-400 uppercase [&::-webkit-details-marker]:hidden">
             <GearSixIcon aria-hidden size={18} weight="bold" />
-            Settings
+            {t.settings.title}
             <CaretDownIcon
               aria-hidden
               size={16}
@@ -47,30 +47,35 @@ export default function App() {
           <div className="space-y-5 border-t border-hive-700 px-5 pt-4 pb-5">
             <ThemeToggle />
 
-            <div className="grid grid-cols-2 gap-2 border-t border-hive-700 pt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Reset wounds, flags and the round counter?')) {
-                    dispatch({ type: 'resetBattle' })
-                  }
-                }}
-                className="press well min-h-11 px-3 font-condensed text-sm font-bold tracking-wider text-hive-200 uppercase"
+            <div className="space-y-2 border-t border-hive-700 pt-4">
+              <ConfirmButton
+                idleClassName="press well min-h-11 w-full px-3 font-condensed text-sm font-bold tracking-wider text-hive-200 uppercase"
+                confirmLabel={t.settings.newBattleConfirm}
+                prompt={t.settings.newBattlePrompt}
+                onConfirm={() => dispatch({ type: 'resetBattle' })}
               >
-                New battle
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm('Delete every fighter? This cannot be undone.')) {
-                    dispatch({ type: 'clearAll' })
-                  }
-                }}
-                className="press min-h-11 rounded-[2px] border border-blood/60 px-3 font-condensed text-sm font-bold tracking-wider text-blood uppercase active:bg-blood/10"
+                {t.settings.newBattle}
+              </ConfirmButton>
+              <ConfirmButton
+                idleClassName="press min-h-11 w-full rounded-[2px] border border-blood/60 px-3 font-condensed text-sm font-bold tracking-wider text-blood uppercase active:bg-blood/10"
+                confirmLabel={t.settings.clearRosterConfirm}
+                prompt={t.settings.clearRosterPrompt}
+                onConfirm={() => dispatch({ type: 'clearAll' })}
               >
-                Clear roster
-              </button>
+                {t.settings.clearRoster}
+              </ConfirmButton>
             </div>
+
+            <a
+              href={__REPO_URL__}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-11 items-center gap-2 font-condensed text-sm font-bold tracking-wider text-hive-400 uppercase underline-offset-4 hover:text-hazard hover:underline"
+            >
+              <GithubLogoIcon aria-hidden size={18} weight="bold" />
+              {t.settings.source}
+              <ArrowUpRightIcon aria-hidden size={14} weight="bold" />
+            </a>
           </div>
         </details>
       </main>

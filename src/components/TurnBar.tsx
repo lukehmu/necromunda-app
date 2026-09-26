@@ -1,4 +1,5 @@
 import { ArrowClockwiseIcon } from '@phosphor-icons/react'
+import { t } from '@/i18n/en'
 import { useStore } from '@/store'
 
 export function TurnBar() {
@@ -8,17 +9,17 @@ export function TurnBar() {
 
   const status =
     inPlay.length === 0
-      ? 'No fighters in play'
+      ? t.turnBar.noFighters
       : pending === 0
-        ? 'All fighters activated'
-        : `${pending} of ${inPlay.length} to activate`
+        ? t.turnBar.allActivated
+        : t.turnBar.toActivate(pending, inPlay.length)
 
   return (
     <header className="sticky top-0 z-10 bg-hive-950/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
       <div className="flex items-center gap-4 px-4 py-3">
         <div className="shrink-0">
           <p className="font-condensed text-xs font-semibold tracking-[0.2em] text-hive-400 uppercase">
-            Round
+            {t.turnBar.round}
           </p>
           {/* Keyed on the round so it re-mounts, and ticks over, each new turn. */}
           <p
@@ -44,7 +45,7 @@ export function TurnBar() {
           className="press flex min-h-12 shrink-0 items-center gap-2 rounded-[2px] bg-hazard px-4 font-condensed text-lg font-bold tracking-wider text-hazard-ink uppercase shadow-[inset_0_1px_0_rgb(255_255_255/0.25),0_2px_0_var(--plate-shadow)]"
         >
           <ArrowClockwiseIcon aria-hidden size={20} weight="bold" />
-          New turn
+          {t.turnBar.newTurn}
         </button>
       </div>
       <div className="hazard-band" />

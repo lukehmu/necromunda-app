@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Segmented } from '@/components/Segmented'
+import { t } from '@/i18n/en'
 import { useStore } from '@/store'
 import type { Theme } from '@/types'
 
@@ -22,12 +23,12 @@ export function ThemeToggle() {
 
   return (
     <Segmented
-      label="Theme"
+      label={t.settings.theme}
       value={state.theme}
       options={[
-        { value: 'system', label: 'System' },
-        { value: 'light', label: 'Light' },
-        { value: 'dark', label: 'Dark' },
+        { value: 'system', label: t.settings.themes.system },
+        { value: 'light', label: t.settings.themes.light },
+        { value: 'dark', label: t.settings.themes.dark },
       ]}
       onChange={(theme) => dispatch({ type: 'setTheme', theme })}
     />

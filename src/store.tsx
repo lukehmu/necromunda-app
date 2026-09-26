@@ -1,4 +1,5 @@
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useReducer } from 'react'
+import { t } from '@/i18n/en'
 import { createId } from '@/lib/id'
 import { emptyState, loadState, saveState } from '@/lib/storage'
 import type { BattleState, Fighter, Flag, Theme } from '@/types'
@@ -48,7 +49,7 @@ export function reducer(state: BattleState, action: Action): BattleState {
       const maxWounds = Math.max(1, Math.round(action.maxWounds))
       const fighter: Fighter = {
         id: createId(),
-        name: action.name.trim() || 'Unnamed fighter',
+        name: action.name.trim() || t.addFighter.defaultName,
         maxWounds,
         wounds: maxWounds,
         activated: false,

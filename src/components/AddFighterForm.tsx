@@ -1,5 +1,6 @@
 import { UserPlusIcon } from '@phosphor-icons/react'
 import { type FormEvent, useId, useState } from 'react'
+import { t } from '@/i18n/en'
 import { useStore } from '@/store'
 
 export function AddFighterForm() {
@@ -25,7 +26,7 @@ export function AddFighterForm() {
     <form onSubmit={onSubmit} className="plate flex items-end gap-2 p-3 pl-5">
       <div className="min-w-0 flex-1">
         <label htmlFor={nameId} className={label}>
-          Fighter
+          {t.addFighter.name}
         </label>
         <input
           id={nameId}
@@ -37,7 +38,7 @@ export function AddFighterForm() {
       </div>
       <div className="w-16 shrink-0">
         <label htmlFor={woundsId} className={label}>
-          Wounds
+          {t.addFighter.wounds}
         </label>
         <input
           id={woundsId}
@@ -55,7 +56,7 @@ export function AddFighterForm() {
         className="press flex min-h-[46px] shrink-0 items-center gap-1.5 rounded-[2px] border border-hazard px-3 font-condensed text-base font-bold tracking-wider text-hazard uppercase active:bg-hazard/15 disabled:opacity-40"
       >
         <UserPlusIcon aria-hidden size={18} weight="bold" />
-        Add
+        {t.addFighter.submit}
       </button>
     </form>
   )

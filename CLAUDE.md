@@ -35,7 +35,13 @@ A single-screen React SPA with no router. All state lives in one reducer.
   users lose their roster.
 - `src/components/` — presentational, each reads `useStore()` directly. No prop
   drilling. Local state is limited to transient UI: the add-fighter inputs and
-  the two-step remove confirmation in `FighterCard`.
+  `ConfirmButton`'s armed state.
+- `src/i18n/en.ts` — **every user-facing string**, including aria-labels and
+  the rules tips. Components import `t`; never inline copy. Interpolated
+  strings are functions (`t.fighter.remove(name)`). Build-time page metadata is
+  the one exception and lives in `vite.config.ts`.
+- Destructive actions use `ConfirmButton` (tap to arm, tap again to commit,
+  auto-disarms after 4s). Do not use `window.confirm()`.
 
 ### Game rules encoded in the reducer
 
@@ -105,6 +111,7 @@ Title, description, theme colour and the absolute site URL live in the `site`
 object in `vite.config.ts`, and feed the HTML head, Open Graph/Twitter cards,
 JSON-LD and the PWA manifest. A small `siteMeta` plugin substitutes
 `%SITE_*%` placeholders in `index.html`; edit copy there, not in the HTML.
-`SITE_URL` comes from the workflow like `BASE_PATH`. `public/og-image.png` is
+`SITE_URL`, and `REPO_URL` (exposed to the app as the `__REPO_URL__` define
+for the settings panel's source link), come from the workflow like `BASE_PATH`. `public/og-image.png` is
 the 1200x630 social card; it is deliberately excluded from the service worker
 precache.
