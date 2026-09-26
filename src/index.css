@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+@theme {
+  --color-hive-950: #0b0b0d;
+  --color-hive-900: #131318;
+  --color-hive-800: #1c1c23;
+  --color-hive-700: #2a2a34;
+  --color-hive-600: #3b3b48;
+  --color-hive-400: #8a8a9c;
+  --color-hive-200: #d6d6e0;
+  --color-rust: #c2410c;
+  --color-toxin: #a3e635;
+  --color-plasma: #38bdf8;
+  --color-blood: #dc2626;
+}
+
+html {
+  color-scheme: dark;
+  background-color: var(--color-hive-950);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--color-hive-950);
+  color: var(--color-hive-200);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  overscroll-behavior-y: none;
+}
+
+/* Stop iOS zooming the page when a field is focused. */
+input,
+select,
+button {
+  font-size: 16px;
+}
