@@ -68,7 +68,7 @@ const ShareLinkButton = ({ code }: { code: string }) => {
   )
 }
 
-const JoinForm = () => {
+export const JoinForm = () => {
   const live = useLiveGame()
   const [code, setCode] = useState('')
   const id = useId()

@@ -66,6 +66,7 @@ export const t = {
     share: 'Share this game',
     starting: 'Starting',
     joinHeading: 'Watch a game',
+    emptyJoin: "Watching someone else's game? Enter their code.",
     codeLabel: 'Game code',
     join: 'Watch',
     joining: 'Joining',

@@ -2,16 +2,17 @@ import { ArrowUpRightIcon, GearSixIcon, GithubLogoIcon } from '@phosphor-icons/r
 import { AddFighterForm } from '@/components/AddFighterForm'
 import { ConfirmButton } from '@/components/ConfirmButton'
 import { FighterCard } from '@/components/FighterCard'
-import { LivePanel } from '@/components/LivePanel'
+import { JoinForm, LivePanel } from '@/components/LivePanel'
 import { Panel } from '@/components/Panel'
 import { RulesPanel } from '@/components/RulesPanel'
 import { ThemeToggle, useAppliedTheme } from '@/components/ThemeToggle'
 import { TurnBar } from '@/components/TurnBar'
 import { t } from '@/i18n/en'
-import { useStore } from '@/store'
+import { useLiveGame, useStore } from '@/store'
 
 const App = () => {
   const { state, dispatch, readOnly } = useStore()
+  const live = useLiveGame()
 
   useAppliedTheme(state.theme)
 
@@ -29,6 +30,16 @@ const App = () => {
             </p>
             {!readOnly && (
               <p className="mx-auto mt-2 max-w-[32ch] text-hive-400">{t.emptyState.body}</p>
+            )}
+            {/* Someone arriving to watch has no gang yet, so offer the code box here too. */}
+            {live.enabled && !live.session && (
+              <div className="mx-auto mt-6 max-w-xs border-t border-hive-700 pt-5 text-left">
+                <p className="mb-2 text-sm text-hive-400">{t.live.emptyJoin}</p>
+                <JoinForm />
+                {live.notice && (
+                  <p className="mt-2 text-sm text-blood">{t.live.notices[live.notice]}</p>
+                )}
+              </div>
             )}
           </div>
         ) : (
