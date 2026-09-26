@@ -2,17 +2,50 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0b0b0d" />
+
+    <title>%SITE_TITLE%</title>
+    <meta name="description" content="%SITE_DESCRIPTION%" />
+    <link rel="canonical" href="%SITE_URL%" />
+    <meta name="robots" content="index, follow" />
+    <meta name="application-name" content="%SITE_NAME%" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="%SITE_THEME_COLOR%" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="%SITE_NAME%" />
+    <meta property="og:title" content="%SITE_TITLE%" />
+    <meta property="og:description" content="%SITE_DESCRIPTION%" />
+    <meta property="og:url" content="%SITE_URL%" />
+    <meta property="og:image" content="%SITE_URL%og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="The tracker on a phone: fighter cards with wound pips and toggles for activated, suppressed and injured."
+    />
+    <meta property="og:locale" content="en_GB" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="%SITE_TITLE%" />
+    <meta name="twitter:description" content="%SITE_DESCRIPTION%" />
+    <meta name="twitter:image" content="%SITE_URL%og-image.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Necromunda" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>Necromunda Gang Tracker</title>
+
+    <script type="application/ld+json">%SITE_JSON_LD%</script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <h1>%SITE_NAME%</h1>
+      <p>%SITE_DESCRIPTION%</p>
+      <p>This tracker needs JavaScript turned on.</p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

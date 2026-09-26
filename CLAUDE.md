@@ -100,3 +100,13 @@ breaks installation.
 bundle during local testing. When a browser check does not reflect a code
 change, unregister the service worker and clear caches before concluding
 anything about the code.
+
+### Page metadata
+
+Title, description, theme colour and the absolute site URL live in the `site`
+object in `vite.config.ts`, and feed the HTML head, Open Graph/Twitter cards,
+JSON-LD and the PWA manifest. A small `siteMeta` plugin substitutes
+`%SITE_*%` placeholders in `index.html`; edit copy there, not in the HTML.
+`SITE_URL` comes from the workflow like `BASE_PATH`. `public/og-image.png` is
+the 1200x630 social card; it is deliberately excluded from the service worker
+precache.

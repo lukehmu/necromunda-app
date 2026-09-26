@@ -71,8 +71,8 @@ Git hooks (lefthook):
 every push to `main`. Pages is set to the "GitHub Actions" source.
 
 The site is served from a subpath, so `vite.config.ts` sets `base` from the
-`BASE_PATH` env var — the workflow passes `/<repo-name>/`, so renaming the
-repository needs no code change.
+`BASE_PATH` env var, and the canonical/social-card URLs from `SITE_URL`. The
+workflow derives both from the repository, so renaming it needs no code change.
 
 ## Stack
 
