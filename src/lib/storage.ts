@@ -4,7 +4,7 @@ const KEY = 'necromunda-tracker'
 
 export const emptyState: BattleState = { version: 4, theme: 'system', turn: 1, fighters: [] }
 
-function num(value: unknown, fallback: number): number {
+const num = (value: unknown, fallback: number): number => {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
 }
 
@@ -13,7 +13,7 @@ function num(value: unknown, fallback: number): number {
  * `condition` ('ok' | 'down' | 'out') and flesh wounds; any injury there
  * collapses to the single `injured` flag.
  */
-function normaliseFighter(raw: unknown): Fighter | null {
+export const normaliseFighter = (raw: unknown): Fighter | null => {
   if (!raw || typeof raw !== 'object') return null
   const f = raw as Record<string, unknown>
   if (typeof f.id !== 'string' || typeof f.name !== 'string') return null
@@ -33,7 +33,12 @@ function normaliseFighter(raw: unknown): Fighter | null {
   }
 }
 
-export function loadState(): BattleState {
+/** Fighters from any untrusted source: storage, or a live game's host. */
+export const normaliseFighters = (raw: unknown[]): Fighter[] => {
+  return raw.map(normaliseFighter).filter((f): f is Fighter => f !== null)
+}
+
+export const loadState = (): BattleState => {
   try {
     const raw = localStorage.getItem(KEY)
     if (!raw) return emptyState
@@ -47,14 +52,14 @@ export function loadState(): BattleState {
       version: 4,
       theme,
       turn: Math.max(1, Math.round(num(parsed.turn, 1))),
-      fighters: parsed.fighters.map(normaliseFighter).filter((f): f is Fighter => f !== null),
+      fighters: normaliseFighters(parsed.fighters),
     }
   } catch {
     return emptyState
   }
 }
 
-export function saveState(state: BattleState): void {
+export const saveState = (state: BattleState): void => {
   try {
     localStorage.setItem(KEY, JSON.stringify(state))
   } catch {

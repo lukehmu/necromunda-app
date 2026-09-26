@@ -16,7 +16,7 @@ import type { Fighter, Flag } from '@/types'
 /** Beyond this many wounds a pip row stops being readable at a glance. */
 const MAX_PIPS = 10
 
-function WoundPips({ fighter }: { fighter: Fighter }) {
+const WoundPips = ({ fighter }: { fighter: Fighter }) => {
   if (fighter.maxWounds > MAX_PIPS) return null
   return (
     <div aria-hidden className="mt-1.5 flex flex-wrap gap-1">
@@ -38,7 +38,7 @@ function WoundPips({ fighter }: { fighter: Fighter }) {
   )
 }
 
-function StepButton({
+const StepButton = ({
   label,
   disabled,
   onClick,
@@ -48,7 +48,7 @@ function StepButton({
   disabled: boolean
   onClick: () => void
   children: React.ReactNode
-}) {
+}) => {
   return (
     <button
       type="button"
@@ -69,8 +69,8 @@ const TIP_FLAGS = [
   { flag: 'injured', className: 'text-blood' },
 ] as const satisfies readonly { flag: Exclude<Flag, 'activated'>; className: string }[]
 
-export function FighterCard({ fighter }: { fighter: Fighter }) {
-  const { dispatch } = useStore()
+export const FighterCard = ({ fighter }: { fighter: Fighter }) => {
+  const { dispatch, readOnly } = useStore()
   const zero = fighter.wounds === 0
   const tips = TIP_FLAGS.filter((tip) => fighter[tip.flag])
 
@@ -85,25 +85,29 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
           onChange={(e) => dispatch({ type: 'rename', id: fighter.id, name: e.target.value })}
           className="min-w-0 flex-1 rounded-[2px] bg-transparent py-1 font-condensed text-xl font-bold tracking-wide text-hive-200 uppercase outline-none focus:bg-hive-800"
         />
-        <ConfirmButton
-          idleAriaLabel={t.fighter.remove(fighter.name)}
-          idleClassName="press grid size-10 shrink-0 place-items-center rounded-[2px] text-hive-400 active:bg-hive-800"
-          confirmLabel={t.fighter.removeConfirm}
-          confirmAriaLabel={t.fighter.confirmRemove(fighter.name)}
-          onConfirm={() => dispatch({ type: 'remove', id: fighter.id })}
-        >
-          <XIcon size={18} weight="bold" />
-        </ConfirmButton>
+        {!readOnly && (
+          <ConfirmButton
+            idleAriaLabel={t.fighter.remove(fighter.name)}
+            idleClassName="press grid size-10 shrink-0 place-items-center rounded-[2px] text-hive-400 active:bg-hive-800"
+            confirmLabel={t.fighter.removeConfirm}
+            confirmAriaLabel={t.fighter.confirmRemove(fighter.name)}
+            onConfirm={() => dispatch({ type: 'remove', id: fighter.id })}
+          >
+            <XIcon size={18} weight="bold" />
+          </ConfirmButton>
+        )}
       </div>
 
       <div className="mt-2 flex items-center gap-3">
-        <StepButton
-          label={t.fighter.loseWound(fighter.name)}
-          disabled={zero}
-          onClick={() => dispatch({ type: 'adjustWounds', id: fighter.id, delta: -1 })}
-        >
-          <MinusIcon size={22} weight="bold" />
-        </StepButton>
+        {!readOnly && (
+          <StepButton
+            label={t.fighter.loseWound(fighter.name)}
+            disabled={zero}
+            onClick={() => dispatch({ type: 'adjustWounds', id: fighter.id, delta: -1 })}
+          >
+            <MinusIcon size={22} weight="bold" />
+          </StepButton>
+        )}
 
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-1.5">
@@ -137,13 +141,15 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
           <WoundPips fighter={fighter} />
         </div>
 
-        <StepButton
-          label={t.fighter.restoreWound(fighter.name)}
-          disabled={fighter.wounds >= fighter.maxWounds}
-          onClick={() => dispatch({ type: 'adjustWounds', id: fighter.id, delta: 1 })}
-        >
-          <PlusIcon size={22} weight="bold" />
-        </StepButton>
+        {!readOnly && (
+          <StepButton
+            label={t.fighter.restoreWound(fighter.name)}
+            disabled={fighter.wounds >= fighter.maxWounds}
+            onClick={() => dispatch({ type: 'adjustWounds', id: fighter.id, delta: 1 })}
+          >
+            <PlusIcon size={22} weight="bold" />
+          </StepButton>
+        )}
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2">

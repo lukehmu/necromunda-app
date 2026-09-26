@@ -1,0 +1,24 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "necromunda-sync",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+  "vars": {
+    // Exact origins allowed to create and join games.
+    "ALLOWED_ORIGINS": "https://lukehmu.github.io,http://localhost:5173,http://localhost:4173,http://localhost:4174"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "GameRoom", "class_name": "GameRoom" }]
+  },
+  // SQLite-backed Durable Objects are the ones available on the Workers free plan.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom"] }],
+  "ratelimits": [
+    {
+      // Game creation, per client IP.
+      "name": "CREATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 10, "period": 60 }
+    }
+  ]
+}

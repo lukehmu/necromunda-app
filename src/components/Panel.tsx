@@ -8,7 +8,7 @@ interface PanelProps {
 }
 
 /** Collapsible plate used for secondary content below the roster. */
-export function Panel({ icon: IconGlyph, title, children }: PanelProps) {
+export const Panel = ({ icon: IconGlyph, title, children }: PanelProps) => {
   return (
     <details className="group plate">
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-5 font-condensed text-sm font-bold tracking-[0.16em] text-hive-400 uppercase [&::-webkit-details-marker]:hidden">

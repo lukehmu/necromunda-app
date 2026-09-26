@@ -1,8 +1,17 @@
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useReducer } from 'react'
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from 'react'
 import { t } from '@/i18n/en'
 import { createId } from '@/lib/id'
 import { emptyState, loadState, saveState } from '@/lib/storage'
 import type { BattleState, Fighter, Flag, Theme } from '@/types'
+import { type Live, useLive } from '@/useLive'
 
 type Action =
   | { type: 'add'; name: string; maxWounds: number }
@@ -16,7 +25,7 @@ type Action =
   | { type: 'resetBattle' }
   | { type: 'clearAll' }
 
-function mapFighter(state: BattleState, id: string, fn: (f: Fighter) => Fighter): BattleState {
+const mapFighter = (state: BattleState, id: string, fn: (f: Fighter) => Fighter): BattleState => {
   return { ...state, fighters: state.fighters.map((f) => (f.id === id ? fn(f) : f)) }
 }
 
@@ -25,7 +34,7 @@ function mapFighter(state: BattleState, id: string, fn: (f: Fighter) => Fighter)
  * follows the wound count across zero in both directions. It only changes on
  * those transitions, so a manual toggle is not undone by unrelated edits.
  */
-function applyWounds(fighter: Fighter, wounds: number): Fighter {
+const applyWounds = (fighter: Fighter, wounds: number): Fighter => {
   const clamped = Math.max(0, Math.min(fighter.maxWounds, Math.round(wounds)))
   let injured = fighter.injured
   if (clamped === 0 && fighter.wounds > 0) injured = true
@@ -33,7 +42,7 @@ function applyWounds(fighter: Fighter, wounds: number): Fighter {
   return { ...fighter, wounds: clamped, injured }
 }
 
-function toggleFlag(fighter: Fighter, flag: Flag): Fighter {
+const toggleFlag = (fighter: Fighter, flag: Flag): Fighter => {
   if (flag === 'activated') {
     const activated = !fighter.activated
     // Suppression costs one action and lifts at the end of the activation, so
@@ -43,7 +52,7 @@ function toggleFlag(fighter: Fighter, flag: Flag): Fighter {
   return { ...fighter, [flag]: !fighter[flag] }
 }
 
-export function reducer(state: BattleState, action: Action): BattleState {
+export const reducer = (state: BattleState, action: Action): BattleState => {
   switch (action.type) {
     case 'add': {
       const maxWounds = Math.max(1, Math.round(action.maxWounds))
@@ -111,26 +120,67 @@ export function reducer(state: BattleState, action: Action): BattleState {
 }
 
 interface Store {
+  /** What to show: this device's game, or the host's while watching one. */
   state: BattleState
   dispatch: React.Dispatch<Action>
+  /** Watching someone else's game: every control is locked. */
+  readOnly: boolean
 }
 
 const StoreContext = createContext<Store | null>(null)
+const LiveContext = createContext<Live | null>(null)
 
-export function StoreProvider({ children }: { children: ReactNode }) {
+export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(reducer, undefined, loadState)
 
   useEffect(() => {
     saveState(state)
   }, [state])
 
-  const value = useMemo(() => ({ state, dispatch }), [state])
+  const shared = useMemo(
+    () => ({ turn: state.turn, fighters: state.fighters }),
+    [state.turn, state.fighters],
+  )
+  const live = useLive(shared)
+  const readOnly = live.session?.role === 'viewer'
 
-  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
+  // A viewer's own game is left untouched in `state` and in storage, and comes
+  // back when they stop watching. Only the theme stays local and editable.
+  const shown = useMemo<BattleState>(
+    () =>
+      readOnly
+        ? { ...state, turn: live.remote?.turn ?? 1, fighters: live.remote?.fighters ?? [] }
+        : state,
+    [readOnly, state, live.remote],
+  )
+
+  const guardedDispatch = useCallback<React.Dispatch<Action>>(
+    (action) => {
+      if (!readOnly || action.type === 'setTheme') dispatch(action)
+    },
+    [readOnly],
+  )
+
+  const value = useMemo(
+    () => ({ state: shown, dispatch: guardedDispatch, readOnly }),
+    [shown, guardedDispatch, readOnly],
+  )
+
+  return (
+    <StoreContext.Provider value={value}>
+      <LiveContext.Provider value={live}>{children}</LiveContext.Provider>
+    </StoreContext.Provider>
+  )
 }
 
-export function useStore(): Store {
+export const useStore = (): Store => {
   const store = useContext(StoreContext)
   if (!store) throw new Error('useStore must be used inside <StoreProvider>')
   return store
+}
+
+export const useLiveGame = (): Live => {
+  const live = useContext(LiveContext)
+  if (!live) throw new Error('useLiveGame must be used inside <StoreProvider>')
+  return live
 }

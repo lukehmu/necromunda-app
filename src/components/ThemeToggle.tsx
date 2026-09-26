@@ -5,7 +5,7 @@ import { useStore } from '@/store'
 import type { Theme } from '@/types'
 
 /** Mirrors the chosen theme onto <html> and the browser chrome colour. */
-export function useAppliedTheme(theme: Theme) {
+export const useAppliedTheme = (theme: Theme) => {
   useEffect(() => {
     const root = document.documentElement
     if (theme === 'system') root.removeAttribute('data-theme')
@@ -18,7 +18,7 @@ export function useAppliedTheme(theme: Theme) {
   }, [theme])
 }
 
-export function ThemeToggle() {
+export const ThemeToggle = () => {
   const { state, dispatch } = useStore()
 
   return (

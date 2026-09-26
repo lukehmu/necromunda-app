@@ -5,12 +5,12 @@ interface SegmentedProps<T extends string> {
   onChange: (value: T) => void
 }
 
-export function Segmented<T extends string>({
+export const Segmented = <T extends string>({
   label,
   value,
   options,
   onChange,
-}: SegmentedProps<T>) {
+}: SegmentedProps<T>) => {
   return (
     <fieldset>
       <legend className="font-condensed text-xs font-semibold tracking-[0.14em] text-hive-400 uppercase">

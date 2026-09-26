@@ -23,7 +23,7 @@ interface ConfirmButtonProps {
  * Inline rather than a native confirm() so it stays quick at the table, never
  * blocks the page, and matches the rest of the UI.
  */
-export function ConfirmButton({
+export const ConfirmButton = ({
   children,
   idleClassName,
   idleAriaLabel,
@@ -31,7 +31,7 @@ export function ConfirmButton({
   confirmAriaLabel,
   prompt,
   onConfirm,
-}: ConfirmButtonProps) {
+}: ConfirmButtonProps) => {
   const [armed, setArmed] = useState(false)
 
   useEffect(() => {

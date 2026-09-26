@@ -2,6 +2,7 @@ import { ArrowUpRightIcon, GearSixIcon, GithubLogoIcon } from '@phosphor-icons/r
 import { AddFighterForm } from '@/components/AddFighterForm'
 import { ConfirmButton } from '@/components/ConfirmButton'
 import { FighterCard } from '@/components/FighterCard'
+import { LivePanel } from '@/components/LivePanel'
 import { Panel } from '@/components/Panel'
 import { RulesPanel } from '@/components/RulesPanel'
 import { ThemeToggle, useAppliedTheme } from '@/components/ThemeToggle'
@@ -9,8 +10,8 @@ import { TurnBar } from '@/components/TurnBar'
 import { t } from '@/i18n/en'
 import { useStore } from '@/store'
 
-export default function App() {
-  const { state, dispatch } = useStore()
+const App = () => {
+  const { state, dispatch, readOnly } = useStore()
 
   useAppliedTheme(state.theme)
 
@@ -19,20 +20,29 @@ export default function App() {
       <TurnBar />
 
       <main className="flex-1 space-y-4 px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-        <AddFighterForm />
+        {!readOnly && <AddFighterForm />}
 
         {state.fighters.length === 0 ? (
           <div className="border border-dashed border-hive-700 px-6 py-10 text-center">
-            <p className="font-stencil text-3xl text-hive-400 uppercase">{t.emptyState.title}</p>
-            <p className="mx-auto mt-2 max-w-[32ch] text-hive-400">{t.emptyState.body}</p>
+            <p className="font-stencil text-3xl text-hive-400 uppercase">
+              {readOnly ? t.live.waiting : t.emptyState.title}
+            </p>
+            {!readOnly && (
+              <p className="mx-auto mt-2 max-w-[32ch] text-hive-400">{t.emptyState.body}</p>
+            )}
           </div>
         ) : (
-          <ul className="space-y-3">
-            {state.fighters.map((fighter) => (
-              <FighterCard key={fighter.id} fighter={fighter} />
-            ))}
-          </ul>
+          // A disabled fieldset natively disables every control inside it.
+          <fieldset disabled={readOnly} className="contents">
+            <ul className="space-y-3">
+              {state.fighters.map((fighter) => (
+                <FighterCard key={fighter.id} fighter={fighter} />
+              ))}
+            </ul>
+          </fieldset>
         )}
+
+        <LivePanel />
 
         <RulesPanel />
 
@@ -40,24 +50,27 @@ export default function App() {
           <div className="space-y-5">
             <ThemeToggle />
 
-            <div className="space-y-2 border-t border-hive-700 pt-4">
-              <ConfirmButton
-                idleClassName="press well min-h-11 w-full px-3 font-condensed text-sm font-bold tracking-wider text-hive-200 uppercase"
-                confirmLabel={t.settings.newBattleConfirm}
-                prompt={t.settings.newBattlePrompt}
-                onConfirm={() => dispatch({ type: 'resetBattle' })}
-              >
-                {t.settings.newBattle}
-              </ConfirmButton>
-              <ConfirmButton
-                idleClassName="press min-h-11 w-full rounded-[2px] border border-blood/60 px-3 font-condensed text-sm font-bold tracking-wider text-blood uppercase active:bg-blood/10"
-                confirmLabel={t.settings.clearRosterConfirm}
-                prompt={t.settings.clearRosterPrompt}
-                onConfirm={() => dispatch({ type: 'clearAll' })}
-              >
-                {t.settings.clearRoster}
-              </ConfirmButton>
-            </div>
+            {/* Watching someone else's game: these would only act on the host's. */}
+            {!readOnly && (
+              <div className="space-y-2 border-t border-hive-700 pt-4">
+                <ConfirmButton
+                  idleClassName="press well min-h-11 w-full px-3 font-condensed text-sm font-bold tracking-wider text-hive-200 uppercase"
+                  confirmLabel={t.settings.newBattleConfirm}
+                  prompt={t.settings.newBattlePrompt}
+                  onConfirm={() => dispatch({ type: 'resetBattle' })}
+                >
+                  {t.settings.newBattle}
+                </ConfirmButton>
+                <ConfirmButton
+                  idleClassName="press min-h-11 w-full rounded-[2px] border border-blood/60 px-3 font-condensed text-sm font-bold tracking-wider text-blood uppercase active:bg-blood/10"
+                  confirmLabel={t.settings.clearRosterConfirm}
+                  prompt={t.settings.clearRosterPrompt}
+                  onConfirm={() => dispatch({ type: 'clearAll' })}
+                >
+                  {t.settings.clearRoster}
+                </ConfirmButton>
+              </div>
+            )}
 
             <a
               href={__REPO_URL__}
@@ -75,3 +88,5 @@ export default function App() {
     </div>
   )
 }
+
+export default App

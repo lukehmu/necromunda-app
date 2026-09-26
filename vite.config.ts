@@ -15,6 +15,10 @@ const siteUrl = process.env.SITE_URL ?? `https://lukehmu.github.io${base}`
 // Source repository, linked from the settings panel. Also workflow-derived.
 const repoUrl = process.env.REPO_URL ?? 'https://github.com/lukehmu/necromunda-app'
 
+// Live-sync Worker (worker/). Empty hides the live game feature entirely.
+// Point at `wrangler dev` locally with SYNC_URL=http://localhost:8787.
+const syncUrl = process.env.SYNC_URL ?? ''
+
 /** Copy shared by the HTML head, social cards and the PWA manifest. */
 const site = {
   name: 'Necromunda Gang Tracker',
@@ -44,7 +48,7 @@ const structuredData = {
  * escaped; the JSON-LD block is not (script content is never entity-decoded),
  * so it is serialised separately with `<` escaped to keep `</script>` out.
  */
-function siteMeta(): Plugin {
+const siteMeta = (): Plugin => {
   const values: Record<string, string> = {
     SITE_URL: siteUrl,
     SITE_NAME: site.name,
@@ -72,6 +76,7 @@ export default defineConfig({
   base,
   define: {
     __REPO_URL__: JSON.stringify(repoUrl),
+    __SYNC_URL__: JSON.stringify(syncUrl),
   },
   plugins: [
     siteMeta(),

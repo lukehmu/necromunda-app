@@ -19,6 +19,19 @@ to get a full-screen app that works with no signal.
 
 Everything lives in `localStorage` on the device. No accounts, no sync.
 
+## Live games
+
+One player runs the game; everyone else can watch it live on their own phone.
+
+- **Host:** Live game → *Share this game*. You get a 4-letter code, a QR code
+  and a share link. Only your phone can change anything.
+- **Watch:** scan the QR code, open the link, or type the code under *Watch a
+  game*. Everything updates as the host plays. Your own gang is kept on your
+  phone and comes back when you leave.
+- **Stop sharing** disconnects everyone. Idle games are deleted after 7 days.
+
+It runs on a small Cloudflare Worker in `worker/` (see Deploying).
+
 ## The automatic rules
 
 Written against the Necromunda (2026) rules:
@@ -59,6 +72,21 @@ The site is served from a subpath, so `vite.config.ts` sets `base` from the
 `BASE_PATH` env var, and the canonical/social-card URLs from `SITE_URL`. The
 workflow derives both from the repository, so renaming it needs no code change.
 
+### The sync Worker
+
+`worker/` deploys separately to Cloudflare, via `.github/workflows/worker.yml`
+on pushes that touch `worker/` or `shared/`. It needs:
+
+- repository **secret** `CLOUDFLARE_API_TOKEN` (an API token with *Workers
+  Scripts: Edit*),
+- repository **variable** `CLOUDFLARE_ACCOUNT_ID`,
+- repository **variable** `SYNC_URL`, the Worker's URL, so the Pages build
+  turns live games on.
+
+Without them the Worker job is skipped and the app simply hides live games.
+Locally: `npm run worker:dev`, then `SYNC_URL=http://localhost:8787 npm run dev`.
+
 ## Stack
 
-Vite · React 19 · Tailwind CSS 4 · Biome · lefthook · vite-plugin-pwa
+Vite · React 19 · Tailwind CSS 4 · Biome · lefthook · vite-plugin-pwa ·
+Cloudflare Workers + Durable Objects (PartyServer)

@@ -25,7 +25,7 @@ interface ToggleProps {
   onToggle: () => void
 }
 
-export function Toggle({ label, active, tone, icon: IconGlyph, onToggle }: ToggleProps) {
+export const Toggle = ({ label, active, tone, icon: IconGlyph, onToggle }: ToggleProps) => {
   return (
     <button
       type="button"

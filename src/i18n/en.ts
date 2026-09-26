@@ -9,6 +9,8 @@ export const t = {
   },
 
   turnBar: {
+    watching: (code: string) => `Watching ${code}`,
+    watchers: (n: number) => (n === 1 ? '1 watching' : `${n} watching`),
     round: 'Round',
     newTurn: 'New turn',
     noFighters: 'No fighters in play',
@@ -55,6 +57,44 @@ export const t = {
     outOfAmmo:
       "Can't shoot that weapon until reloaded. Reload is a single action. Scarce weapons need a roll; Limited ones can't reload.",
     injured: "Can't use skills. Clears if they get a wound back.",
+  },
+
+  live: {
+    title: 'Live game',
+    intro:
+      'Let the other players watch this game live on their phones. Only you can change anything.',
+    share: 'Share this game',
+    starting: 'Starting',
+    joinHeading: 'Watch a game',
+    codeLabel: 'Game code',
+    join: 'Watch',
+    joining: 'Joining',
+    codeHeading: 'Game code',
+    qrAlt: (code: string) => `QR code to watch game ${code}`,
+    shareLink: 'Share link',
+    copyLink: 'Copy link',
+    copied: 'Link copied',
+    shareTitle: 'Watch my Necromunda game',
+    shareText: (code: string) => `Watch game ${code} live`,
+    stop: 'Stop sharing',
+    stopConfirm: 'Stop',
+    stopPrompt: 'Everyone watching is disconnected. The game stays on this phone.',
+    watchingHeading: (code: string) => `Watching game ${code}`,
+    watchingNote: 'Your own gang is safe on this phone and comes back when you leave.',
+    leave: 'Leave',
+    status: {
+      connecting: 'Connecting',
+      live: 'Live',
+      offline: 'Reconnecting',
+    },
+    notices: {
+      ended: 'The host ended the game.',
+      notFound: 'No game with that code. It may have finished.',
+      network: "Couldn't reach the live game server. Check your connection.",
+      tooMany: 'Too many new games from here. Try again in a minute.',
+      badToken: 'This phone is no longer the host of that game.',
+    },
+    waiting: 'Waiting for the host',
   },
 
   rules: {

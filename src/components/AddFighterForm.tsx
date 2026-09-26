@@ -3,14 +3,14 @@ import { type FormEvent, useId, useState } from 'react'
 import { t } from '@/i18n/en'
 import { useStore } from '@/store'
 
-export function AddFighterForm() {
+export const AddFighterForm = () => {
   const { dispatch } = useStore()
   const [name, setName] = useState('')
   const [wounds, setWounds] = useState('1')
   const nameId = useId()
   const woundsId = useId()
 
-  function onSubmit(event: FormEvent) {
+  const onSubmit = (event: FormEvent) => {
     event.preventDefault()
     if (!name.trim()) return
     dispatch({ type: 'add', name, maxWounds: Number(wounds) || 1 })

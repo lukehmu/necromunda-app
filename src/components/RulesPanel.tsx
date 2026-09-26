@@ -16,7 +16,7 @@ const ORDER: { key: RuleKey; className: string }[] = [
 ]
 
 /** Plain-language summary of what the reducer automates. Keep in step with store.tsx. */
-export function RulesPanel() {
+export const RulesPanel = () => {
   return (
     <Panel icon={BookOpenTextIcon} title={t.rules.title}>
       <p className="text-hive-400">{t.rules.intro}</p>
