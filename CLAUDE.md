@@ -35,7 +35,8 @@ A single-screen React SPA with no router. All state lives in one reducer.
   `normaliseFighter` together when the fighter shape changes**, or existing
   users lose their roster.
 - `src/components/` — presentational, each reads `useStore()` directly. No prop
-  drilling, no local state except the add-fighter form inputs.
+  drilling. Local state is limited to transient UI: the add-fighter inputs and
+  the two-step remove confirmation in `FighterCard`.
 
 ### Game rules encoded in the reducer
 

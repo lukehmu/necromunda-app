@@ -7,8 +7,10 @@ import {
   PlusIcon,
   ProhibitIcon,
   SkullIcon,
+  TrashIcon,
   XIcon,
 } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
 import { Toggle } from '@/components/Toggle'
 import { clearsThisTurn, useStore } from '@/store'
 import type { Fighter } from '@/types'
@@ -62,6 +64,59 @@ function StepButton({
   )
 }
 
+/** How long the remove confirmation stays armed before quietly backing off. */
+const CONFIRM_MS = 4000
+
+/**
+ * Two-step remove: the first tap arms it, the second removes. Inline rather
+ * than a native confirm() so it stays quick at the table and never blocks.
+ */
+function RemoveButton({ name, onRemove }: { name: string; onRemove: () => void }) {
+  const [armed, setArmed] = useState(false)
+
+  useEffect(() => {
+    if (!armed) return
+    const timer = setTimeout(() => setArmed(false), CONFIRM_MS)
+    return () => clearTimeout(timer)
+  }, [armed])
+
+  if (!armed) {
+    return (
+      <button
+        type="button"
+        aria-label={`Remove ${name}`}
+        onClick={() => setArmed(true)}
+        className="press grid size-10 shrink-0 place-items-center rounded-[2px] text-hive-400 active:bg-hive-800"
+      >
+        <XIcon size={18} weight="bold" />
+      </button>
+    )
+  }
+
+  return (
+    <div className="flex shrink-0 gap-1">
+      <button
+        type="button"
+        onClick={() => setArmed(false)}
+        className="press well min-h-10 px-3 font-condensed text-sm font-bold tracking-wider text-hive-200 uppercase"
+      >
+        Keep
+      </button>
+      <button
+        type="button"
+        // biome-ignore lint/a11y/noAutofocus: focus follows the tap that armed it
+        autoFocus
+        aria-label={`Confirm remove ${name}`}
+        onClick={onRemove}
+        className="press flex min-h-10 items-center gap-1 rounded-[2px] bg-blood px-3 font-condensed text-sm font-bold tracking-wider text-hive-950 uppercase"
+      >
+        <TrashIcon aria-hidden size={16} weight="bold" />
+        Remove
+      </button>
+    </div>
+  )
+}
+
 export function FighterCard({ fighter }: { fighter: Fighter }) {
   const { state, dispatch } = useStore()
   const zero = fighter.wounds === 0
@@ -93,14 +148,10 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
             Out of action
           </span>
         )}
-        <button
-          type="button"
-          aria-label={`Remove ${fighter.name}`}
-          onClick={() => dispatch({ type: 'remove', id: fighter.id })}
-          className="press grid size-10 shrink-0 place-items-center rounded-[2px] text-hive-400 active:bg-hive-800"
-        >
-          <XIcon size={18} weight="bold" />
-        </button>
+        <RemoveButton
+          name={fighter.name}
+          onRemove={() => dispatch({ type: 'remove', id: fighter.id })}
+        />
       </div>
 
       <div className="mt-2 flex items-center gap-3">
