@@ -1,10 +1,13 @@
-import { type FormEvent, useState } from 'react'
+import { UserPlusIcon } from '@phosphor-icons/react'
+import { type FormEvent, useId, useState } from 'react'
 import { useStore } from '@/store'
 
 export function AddFighterForm() {
   const { dispatch } = useStore()
   const [name, setName] = useState('')
   const [wounds, setWounds] = useState('1')
+  const nameId = useId()
+  const woundsId = useId()
 
   function onSubmit(event: FormEvent) {
     event.preventDefault()
@@ -14,31 +17,44 @@ export function AddFighterForm() {
     setWounds('1')
   }
 
+  const label = 'font-condensed text-xs font-semibold tracking-[0.14em] text-hive-400 uppercase'
+  const field =
+    'well w-full px-3 py-2.5 text-hive-200 outline-none focus:border-hazard focus:ring-1 focus:ring-hazard'
+
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex gap-2 rounded-xl border border-hive-700 bg-hive-900 p-2"
-    >
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Add fighter"
-        aria-label="Fighter name"
-        className="min-w-0 flex-1 rounded-lg bg-hive-800 px-3 py-2 text-hive-200 placeholder:text-hive-400 outline-none focus:ring-1 focus:ring-plasma"
-      />
-      <input
-        type="number"
-        min={1}
-        max={20}
-        value={wounds}
-        onChange={(e) => setWounds(e.target.value)}
-        aria-label="Total wounds"
-        className="w-16 rounded-lg bg-hive-800 px-2 py-2 text-center text-hive-200 tabular-nums outline-none focus:ring-1 focus:ring-plasma"
-      />
+    <form onSubmit={onSubmit} className="plate flex items-end gap-2 p-3 pl-5">
+      <div className="min-w-0 flex-1">
+        <label htmlFor={nameId} className={label}>
+          Fighter
+        </label>
+        <input
+          id={nameId}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          autoComplete="off"
+          className={`${field} mt-1 font-condensed text-lg font-semibold uppercase`}
+        />
+      </div>
+      <div className="w-16 shrink-0">
+        <label htmlFor={woundsId} className={label}>
+          Wounds
+        </label>
+        <input
+          id={woundsId}
+          type="number"
+          min={1}
+          max={20}
+          value={wounds}
+          onChange={(e) => setWounds(e.target.value)}
+          className={`${field} mt-1 text-center font-condensed text-lg font-semibold tabular-nums`}
+        />
+      </div>
       <button
         type="submit"
-        className="rounded-lg bg-rust px-4 py-2 font-semibold text-white active:brightness-90"
+        disabled={!name.trim()}
+        className="press flex min-h-[46px] shrink-0 items-center gap-1.5 rounded-[2px] border border-hazard px-3 font-condensed text-base font-bold tracking-wider text-hazard uppercase active:bg-hazard/15 disabled:opacity-40"
       >
+        <UserPlusIcon aria-hidden size={18} weight="bold" />
         Add
       </button>
     </form>

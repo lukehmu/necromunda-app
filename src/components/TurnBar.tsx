@@ -1,3 +1,4 @@
+import { ArrowClockwiseIcon } from '@phosphor-icons/react'
 import { useStore } from '@/store'
 
 export function TurnBar() {
@@ -6,28 +7,48 @@ export function TurnBar() {
   const inPlay = state.fighters.filter((f) => f.condition !== 'out')
   const pending = inPlay.filter((f) => !f.activated).length
 
+  const status =
+    inPlay.length === 0
+      ? 'No fighters in play'
+      : pending === 0
+        ? 'All fighters activated'
+        : `${pending} of ${inPlay.length} to activate`
+
   return (
-    <header className="sticky top-0 z-10 border-b border-hive-700 bg-hive-950/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur">
-      <div className="flex items-center gap-3 py-3">
-        <div className="min-w-0">
-          <p className="text-xs tracking-widest text-hive-400 uppercase">Round</p>
-          <p className="text-3xl leading-none font-bold tabular-nums">{state.turn}</p>
+    <header className="sticky top-0 z-10 bg-hive-950/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
+      <div className="flex items-center gap-4 px-4 py-3">
+        <div className="shrink-0">
+          <p className="font-condensed text-xs font-semibold tracking-[0.2em] text-hive-400 uppercase">
+            Round
+          </p>
+          {/* Keyed on the round so it re-mounts, and ticks over, each new turn. */}
+          <p
+            key={state.turn}
+            className="round-tick font-stencil text-5xl leading-none text-hive-200 tabular-nums"
+          >
+            {String(state.turn).padStart(2, '0')}
+          </p>
         </div>
-        <p className="min-w-0 flex-1 text-sm text-hive-400">
-          {inPlay.length === 0
-            ? 'No fighters in play'
-            : pending === 0
-              ? 'All fighters activated'
-              : `${pending} still to activate`}
+
+        <p
+          aria-live="polite"
+          className={`min-w-0 flex-1 font-condensed text-base font-semibold tracking-wide uppercase ${
+            pending === 0 && inPlay.length > 0 ? 'text-hazard' : 'text-hive-400'
+          }`}
+        >
+          {status}
         </p>
+
         <button
           type="button"
           onClick={() => dispatch({ type: 'newTurn' })}
-          className="min-h-12 rounded-lg bg-plasma px-4 font-semibold text-hive-950 active:brightness-90"
+          className="press flex min-h-12 shrink-0 items-center gap-2 rounded-[2px] bg-hazard px-4 font-condensed text-lg font-bold tracking-wider text-hazard-ink uppercase shadow-[inset_0_1px_0_rgb(255_255_255/0.25),0_2px_0_var(--plate-shadow)]"
         >
+          <ArrowClockwiseIcon aria-hidden size={20} weight="bold" />
           New turn
         </button>
       </div>
+      <div className="hazard-band" />
     </header>
   )
 }

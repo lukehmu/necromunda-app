@@ -1,3 +1,4 @@
+import { CaretDownIcon, GearSixIcon } from '@phosphor-icons/react'
 import { AddFighterForm } from '@/components/AddFighterForm'
 import { FighterCard } from '@/components/FighterCard'
 import { RulesToggle } from '@/components/RulesToggle'
@@ -14,13 +15,16 @@ export default function App() {
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col">
       <TurnBar />
 
-      <main className="flex-1 space-y-3 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <main className="flex-1 space-y-4 px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
         <AddFighterForm />
 
         {state.fighters.length === 0 ? (
-          <p className="py-12 text-center text-hive-400">
-            Add your gang, then track wounds and activations as the game runs.
-          </p>
+          <div className="border border-dashed border-hive-700 px-6 py-10 text-center">
+            <p className="font-stencil text-3xl text-hive-400 uppercase">Muster your gang</p>
+            <p className="mx-auto mt-2 max-w-[32ch] text-hive-400">
+              Add each fighter with the wounds on their card. Then track the fight turn by turn.
+            </p>
+          </div>
         ) : (
           <ul className="space-y-3">
             {state.fighters.map((fighter) => (
@@ -29,16 +33,23 @@ export default function App() {
           </ul>
         )}
 
-        <details className="rounded-xl border border-hive-700 bg-hive-900/60">
-          <summary className="cursor-pointer list-none px-3 py-3 text-xs tracking-widest text-hive-400 uppercase">
+        <details className="group plate">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-5 font-condensed text-sm font-bold tracking-[0.16em] text-hive-400 uppercase [&::-webkit-details-marker]:hidden">
+            <GearSixIcon aria-hidden size={18} weight="bold" />
             Settings
+            <CaretDownIcon
+              aria-hidden
+              size={16}
+              weight="bold"
+              className="ml-auto transition-transform group-open:rotate-180"
+            />
           </summary>
 
-          <div className="space-y-3 border-t border-hive-700 p-3">
+          <div className="space-y-5 border-t border-hive-700 px-5 pt-4 pb-5">
             <RulesToggle />
             <ThemeToggle />
 
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2 border-t border-hive-700 pt-4">
               <button
                 type="button"
                 onClick={() => {
@@ -46,7 +57,7 @@ export default function App() {
                     dispatch({ type: 'resetBattle' })
                   }
                 }}
-                className="min-h-11 flex-1 rounded-lg border border-hive-600 bg-hive-800 px-3 text-sm font-semibold text-hive-200 active:bg-hive-700"
+                className="press well min-h-11 px-3 font-condensed text-sm font-bold tracking-wider text-hive-200 uppercase"
               >
                 New battle
               </button>
@@ -57,7 +68,7 @@ export default function App() {
                     dispatch({ type: 'clearAll' })
                   }
                 }}
-                className="min-h-11 flex-1 rounded-lg border border-hive-700 px-3 text-sm font-semibold text-hive-400 active:bg-hive-800"
+                className="press min-h-11 rounded-[2px] border border-blood/60 px-3 font-condensed text-sm font-bold tracking-wider text-blood uppercase active:bg-blood/10"
               >
                 Clear roster
               </button>

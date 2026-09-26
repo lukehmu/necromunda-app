@@ -3,6 +3,10 @@
 /*
  * Tailwind tokens point at CSS variables so the whole palette can be swapped
  * for light mode without touching a single utility class.
+ *
+ * Palette is underhive industrial: gunmetal plates, bone text, and three
+ * semantic hues only. Hazard amber is the single interactive accent; blood is
+ * reserved for injury; verdigris is reserved for suppression.
  */
 @theme {
   --color-hive-950: var(--surface-950);
@@ -12,59 +16,72 @@
   --color-hive-600: var(--surface-600);
   --color-hive-400: var(--surface-400);
   --color-hive-200: var(--surface-200);
-  --color-rust: var(--accent-rust);
-  --color-toxin: var(--accent-toxin);
-  --color-plasma: var(--accent-plasma);
+  --color-hazard: var(--accent-hazard);
+  --color-hazard-ink: var(--accent-hazard-ink);
   --color-blood: var(--accent-blood);
+  --color-toxin: var(--accent-toxin);
+
+  --font-stencil: "Big Shoulders Stencil Display", "Barlow Condensed", sans-serif;
+  --font-condensed: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Dark is the default: it is what you want under a table lamp at 1am. */
+/* Dark is the default: gunmetal under a single lumen strip. */
 :root {
-  --surface-950: #0b0b0d;
-  --surface-900: #131318;
-  --surface-800: #1c1c23;
-  --surface-700: #2a2a34;
-  --surface-600: #3b3b48;
-  --surface-400: #8a8a9c;
-  --surface-200: #d6d6e0;
-  --accent-rust: #ea580c;
-  --accent-toxin: #a3e635;
-  --accent-plasma: #38bdf8;
-  --accent-blood: #ef4444;
+  --surface-950: #0f0e0d;
+  --surface-900: #1a1917;
+  --surface-800: #24221f;
+  --surface-700: #36322d;
+  --surface-600: #4d4740;
+  --surface-400: #a39a8c;
+  --surface-200: #e6dfd1;
+  --accent-hazard: #e9a820;
+  --accent-hazard-ink: #1a1203;
+  --accent-blood: #e0493b;
+  --accent-toxin: #7fc29b;
+  --plate-highlight: rgb(255 240 210 / 0.06);
+  --plate-shadow: rgb(0 0 0 / 0.55);
+  --rivet: #5a534a;
   color-scheme: dark;
 }
 
-/* Light values, used when the device asks for light and no explicit choice
-   has been made, or when light is picked in settings. */
+/* Light is a printed fighter datasheet: grey card stock, black ink. Declared
+   twice on purpose: once for "system", once for the explicit setting. */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --surface-950: #f1f1f4;
-    --surface-900: #ffffff;
-    --surface-800: #e6e6ec;
-    --surface-700: #d2d2dc;
-    --surface-600: #b3b3c2;
-    --surface-400: #5b5b6b;
-    --surface-200: #16161c;
-    --accent-rust: #c2410c;
-    --accent-toxin: #4d7c0f;
-    --accent-plasma: #0369a1;
-    --accent-blood: #b91c1c;
+    --surface-950: #d9d7d2;
+    --surface-900: #f1f0ec;
+    --surface-800: #e3e1dc;
+    --surface-700: #bdb9b1;
+    --surface-600: #8f8a80;
+    --surface-400: #57524a;
+    --surface-200: #1b1a18;
+    --accent-hazard: #9a6200;
+    --accent-hazard-ink: #fff8e8;
+    --accent-blood: #a8261b;
+    --accent-toxin: #2c6b4f;
+    --plate-highlight: rgb(255 255 255 / 0.7);
+    --plate-shadow: rgb(60 50 35 / 0.18);
+    --rivet: #a39d92;
     color-scheme: light;
   }
 }
 
 :root[data-theme="light"] {
-  --surface-950: #f1f1f4;
-  --surface-900: #ffffff;
-  --surface-800: #e6e6ec;
-  --surface-700: #d2d2dc;
-  --surface-600: #b3b3c2;
-  --surface-400: #5b5b6b;
-  --surface-200: #16161c;
-  --accent-rust: #c2410c;
-  --accent-toxin: #4d7c0f;
-  --accent-plasma: #0369a1;
-  --accent-blood: #b91c1c;
+  --surface-950: #d9d7d2;
+  --surface-900: #f1f0ec;
+  --surface-800: #e3e1dc;
+  --surface-700: #bdb9b1;
+  --surface-600: #8f8a80;
+  --surface-400: #57524a;
+  --surface-200: #1b1a18;
+  --accent-hazard: #9a6200;
+  --accent-hazard-ink: #fff8e8;
+  --accent-blood: #a8261b;
+  --accent-toxin: #2c6b4f;
+  --plate-highlight: rgb(255 255 255 / 0.7);
+  --plate-shadow: rgb(60 50 35 / 0.18);
+  --rivet: #a39d92;
   color-scheme: light;
 }
 
@@ -77,8 +94,15 @@ body {
   margin: 0;
   min-height: 100dvh;
   background-color: var(--surface-950);
+  /* Faint brushed-metal grain, painted once on the fixed body background. */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0 2px,
+    rgb(128 128 128 / 0.025) 2px 3px
+  );
+  background-attachment: fixed;
   color: var(--surface-200);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   overscroll-behavior-y: none;
 }
 
@@ -87,4 +111,84 @@ input,
 select,
 button {
   font-size: 16px;
+}
+
+@layer components {
+  /* Riveted iron plate: bevelled edge plus a rivet in each corner. */
+  .plate {
+    position: relative;
+    background-color: var(--surface-900);
+    border: 1px solid var(--surface-700);
+    border-radius: 2px;
+    box-shadow:
+      inset 0 1px 0 var(--plate-highlight),
+      0 2px 0 var(--plate-shadow);
+    background-image:
+      radial-gradient(circle at 7px 7px, var(--rivet) 1.6px, transparent 2.2px),
+      radial-gradient(circle at calc(100% - 7px) 7px, var(--rivet) 1.6px, transparent 2.2px),
+      radial-gradient(circle at 7px calc(100% - 7px), var(--rivet) 1.6px, transparent 2.2px),
+      radial-gradient(
+        circle at calc(100% - 7px) calc(100% - 7px),
+        var(--rivet) 1.6px,
+        transparent 2.2px
+      );
+  }
+
+  /* Recessed well for inputs and inactive controls. */
+  .well {
+    background-color: var(--surface-800);
+    border: 1px solid var(--surface-700);
+    border-radius: 2px;
+    box-shadow: inset 0 2px 3px var(--plate-shadow);
+  }
+
+  /* Hazard chevron band. */
+  .hazard-band {
+    height: 6px;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--accent-hazard) 0 10px,
+      var(--surface-950) 10px 20px
+    );
+  }
+
+  /* Physical push on press. Transform only, so it stays on the compositor. */
+  .press {
+    transition:
+      transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      opacity 200ms ease;
+  }
+  .press:active:not(:disabled) {
+    transform: translateY(1px) scale(0.985);
+  }
+}
+
+/* Reduced motion must beat every component transition, hence !important. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: global motion kill switch */
+    transition-duration: 0ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: global motion kill switch */
+    animation-duration: 0ms !important;
+  }
+}
+
+/* Round counter kicks over when a new turn starts. */
+@keyframes round-tick {
+  from {
+    transform: translateY(-35%);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.round-tick {
+  animation: round-tick 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }

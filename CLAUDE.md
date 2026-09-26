@@ -56,16 +56,36 @@ Two deliberately automated rules, everything else is manual toggling:
    Changing either rule means changing `toggleFlag` and `clearsThisTurn`
    together, plus the hint text in `FighterCard`.
 
-### Theming
+### Theming and visual language
 
-Tailwind v4 `@theme` tokens in `src/index.css` are defined as `var(--surface-*)`
-/ `var(--accent-*)` indirections, so light mode is a variable swap rather than
-per-utility `dark:` variants — **do not add `dark:` classes**, redefine the
-variables. Light values are declared twice on purpose: under
-`@media (prefers-color-scheme: light)` scoped to `:root:not([data-theme='dark'])`
-for the "system" setting, and under `:root[data-theme='light']` for the explicit
-one. `useAppliedTheme` in `ThemeToggle.tsx` sets/removes `data-theme` and keeps
-the `theme-color` meta tag in sync.
+Underhive-industrial look: riveted gunmetal plates in dark mode, a printed grey
+fighter datasheet in light mode. Keep to these constraints when adding UI:
+
+- **Colour.** Tailwind v4 `@theme` tokens in `src/index.css` are `var(--surface-*)`
+  / `var(--accent-*)` indirections, so light mode is a variable swap. **Do not
+  add `dark:` classes**; redefine the variables. Light values are declared twice
+  on purpose: under `@media (prefers-color-scheme: light)` scoped to
+  `:root:not([data-theme='dark'])` for "system", and under
+  `:root[data-theme='light']` for the explicit choice. `hazard` is the only
+  interactive accent; `blood` means injury and `toxin` means suppression, and
+  neither is used for anything else.
+- **Material.** `.plate` (bevelled panel with corner rivets), `.well` (recessed
+  input/inactive control), `.hazard-band` and `.press` (transform-only tactile
+  push) are component classes in `index.css`. Reuse them rather than restyling.
+- **Shape.** Every corner is `rounded-[2px]`. No other radius.
+- **Type.** `font-stencil` (Big Shoulders Stencil) for big numbers only,
+  `font-condensed` (Barlow Condensed, uppercase) for labels and controls,
+  default `font-sans` (Barlow) for sentences. Fonts are self-hosted via
+  fontsource Latin subsets imported in `main.tsx`, so the PWA precaches them.
+  Import them **without** `.css` (the package exports map appends it) and from
+  JS, not CSS: Tailwind's CSS `@import` drops them silently.
+- **Icons.** `@phosphor-icons/react`, using the `*Icon` export names (the bare
+  names are deprecated), `weight="bold"`.
+- **Motion.** Feedback only, and everything is zeroed under
+  `prefers-reduced-motion`.
+
+`useAppliedTheme` in `ThemeToggle.tsx` sets/removes `data-theme` and keeps the
+`theme-color` meta tag in sync.
 
 ### PWA and deployment
 
