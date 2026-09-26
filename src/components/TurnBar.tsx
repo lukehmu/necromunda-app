@@ -2,7 +2,9 @@ import { useStore } from '@/store'
 
 export function TurnBar() {
   const { state, dispatch } = useStore()
-  const pending = state.fighters.filter((f) => !f.activated).length
+  // Fighters who are out of action have nothing left to activate.
+  const inPlay = state.fighters.filter((f) => f.condition !== 'out')
+  const pending = inPlay.filter((f) => !f.activated).length
 
   return (
     <header className="sticky top-0 z-10 border-b border-hive-700 bg-hive-950/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur">
@@ -12,8 +14,8 @@ export function TurnBar() {
           <p className="text-3xl leading-none font-bold tabular-nums">{state.turn}</p>
         </div>
         <p className="min-w-0 flex-1 text-sm text-hive-400">
-          {state.fighters.length === 0
-            ? 'No fighters yet'
+          {inPlay.length === 0
+            ? 'No fighters in play'
             : pending === 0
               ? 'All fighters activated'
               : `${pending} still to activate`}

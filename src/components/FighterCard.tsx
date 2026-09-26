@@ -1,5 +1,5 @@
 import { FlagChip } from '@/components/FlagChip'
-import { useStore } from '@/store'
+import { clearsThisTurn, useStore } from '@/store'
 import type { Fighter } from '@/types'
 
 const woundBarClass = (fighter: Fighter) => {
@@ -9,13 +9,19 @@ const woundBarClass = (fighter: Fighter) => {
 }
 
 export function FighterCard({ fighter }: { fighter: Fighter }) {
-  const { dispatch } = useStore()
+  const { state, dispatch } = useStore()
   const down = fighter.wounds === 0
+  const out = fighter.condition === 'out'
+  const recovering = clearsThisTurn(fighter, state.rules, state.turn)
 
   return (
     <li
       className={`rounded-xl border bg-hive-900 p-3 transition-opacity ${
-        fighter.activated ? 'border-hive-700 opacity-60' : 'border-hive-600'
+        out
+          ? 'border-hive-700 opacity-40'
+          : fighter.activated
+            ? 'border-hive-700 opacity-60'
+            : 'border-hive-600'
       }`}
     >
       <div className="flex items-start gap-2">
@@ -79,7 +85,7 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
 
         <button
           type="button"
-          aria-label={`Heal a wound: ${fighter.name}`}
+          aria-label={`Restore a wound: ${fighter.name}`}
           onClick={() => dispatch({ type: 'adjustWounds', id: fighter.id, delta: 1 })}
           disabled={fighter.wounds >= fighter.maxWounds}
           className="size-12 shrink-0 rounded-lg border border-hive-600 bg-hive-800 text-2xl leading-none font-bold text-hive-200 active:bg-hive-700 disabled:opacity-30"
@@ -107,16 +113,54 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
           activeClass="border-rust bg-rust/20 text-rust"
           onToggle={() => dispatch({ type: 'toggle', id: fighter.id, flag: 'outOfAmmo' })}
         />
+      </div>
+
+      <div className="mt-2 flex items-center gap-2">
+        <span className="w-12 shrink-0 text-xs tracking-wide text-hive-400 uppercase">Injury</span>
         <FlagChip
-          label="Injured"
-          active={fighter.injured}
+          label={fighter.fleshWounds > 0 ? `Flesh ×${fighter.fleshWounds}` : 'Flesh wound'}
+          active={fighter.fleshWounds > 0}
+          activeClass="border-rust bg-rust/20 text-rust"
+          onToggle={() => dispatch({ type: 'adjustFleshWounds', id: fighter.id, delta: 1 })}
+        />
+        {fighter.fleshWounds > 0 && (
+          <button
+            type="button"
+            aria-label={`Remove a flesh wound: ${fighter.name}`}
+            onClick={() => dispatch({ type: 'adjustFleshWounds', id: fighter.id, delta: -1 })}
+            className="min-h-11 shrink-0 rounded-lg border border-hive-700 bg-hive-800 px-3 text-hive-400 active:bg-hive-700"
+          >
+            −
+          </button>
+        )}
+        <FlagChip
+          label="Down"
+          active={fighter.condition === 'down'}
           activeClass="border-blood bg-blood/20 text-blood"
-          onToggle={() => dispatch({ type: 'toggle', id: fighter.id, flag: 'injured' })}
+          onToggle={() => dispatch({ type: 'setCondition', id: fighter.id, condition: 'down' })}
+        />
+        <FlagChip
+          label="Out"
+          active={out}
+          activeClass="border-blood bg-blood text-hive-950"
+          onToggle={() => dispatch({ type: 'setCondition', id: fighter.id, condition: 'out' })}
         />
       </div>
 
-      {fighter.suppressed && fighter.suppressedActivatedTurn !== null && (
-        <p className="mt-2 text-xs text-toxin">Suppression lifts at the start of the next turn.</p>
+      {fighter.fleshWounds > 0 && !out && (
+        <p className="mt-2 text-xs text-rust">
+          −{fighter.fleshWounds} to WS and BS from flesh wounds.
+        </p>
+      )}
+
+      {fighter.suppressed && !out && (
+        <p className="mt-2 text-xs text-toxin">
+          {state.rules === 'n18'
+            ? 'Prone — activating stands them up.'
+            : recovering
+              ? 'Misses this turn, then stands up when the turn ends.'
+              : 'Stands up at the end of next turn.'}
+        </p>
       )}
     </li>
   )

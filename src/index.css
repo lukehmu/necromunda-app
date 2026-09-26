@@ -1,30 +1,83 @@
 @import "tailwindcss";
 
+/*
+ * Tailwind tokens point at CSS variables so the whole palette can be swapped
+ * for light mode without touching a single utility class.
+ */
 @theme {
-  --color-hive-950: #0b0b0d;
-  --color-hive-900: #131318;
-  --color-hive-800: #1c1c23;
-  --color-hive-700: #2a2a34;
-  --color-hive-600: #3b3b48;
-  --color-hive-400: #8a8a9c;
-  --color-hive-200: #d6d6e0;
-  --color-rust: #c2410c;
-  --color-toxin: #a3e635;
-  --color-plasma: #38bdf8;
-  --color-blood: #dc2626;
+  --color-hive-950: var(--surface-950);
+  --color-hive-900: var(--surface-900);
+  --color-hive-800: var(--surface-800);
+  --color-hive-700: var(--surface-700);
+  --color-hive-600: var(--surface-600);
+  --color-hive-400: var(--surface-400);
+  --color-hive-200: var(--surface-200);
+  --color-rust: var(--accent-rust);
+  --color-toxin: var(--accent-toxin);
+  --color-plasma: var(--accent-plasma);
+  --color-blood: var(--accent-blood);
+}
+
+/* Dark is the default: it is what you want under a table lamp at 1am. */
+:root {
+  --surface-950: #0b0b0d;
+  --surface-900: #131318;
+  --surface-800: #1c1c23;
+  --surface-700: #2a2a34;
+  --surface-600: #3b3b48;
+  --surface-400: #8a8a9c;
+  --surface-200: #d6d6e0;
+  --accent-rust: #ea580c;
+  --accent-toxin: #a3e635;
+  --accent-plasma: #38bdf8;
+  --accent-blood: #ef4444;
+  color-scheme: dark;
+}
+
+/* Light values, used when the device asks for light and no explicit choice
+   has been made, or when light is picked in settings. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --surface-950: #f1f1f4;
+    --surface-900: #ffffff;
+    --surface-800: #e6e6ec;
+    --surface-700: #d2d2dc;
+    --surface-600: #b3b3c2;
+    --surface-400: #5b5b6b;
+    --surface-200: #16161c;
+    --accent-rust: #c2410c;
+    --accent-toxin: #4d7c0f;
+    --accent-plasma: #0369a1;
+    --accent-blood: #b91c1c;
+    color-scheme: light;
+  }
+}
+
+:root[data-theme="light"] {
+  --surface-950: #f1f1f4;
+  --surface-900: #ffffff;
+  --surface-800: #e6e6ec;
+  --surface-700: #d2d2dc;
+  --surface-600: #b3b3c2;
+  --surface-400: #5b5b6b;
+  --surface-200: #16161c;
+  --accent-rust: #c2410c;
+  --accent-toxin: #4d7c0f;
+  --accent-plasma: #0369a1;
+  --accent-blood: #b91c1c;
+  color-scheme: light;
 }
 
 html {
-  color-scheme: dark;
-  background-color: var(--color-hive-950);
+  background-color: var(--surface-950);
   -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   min-height: 100dvh;
-  background-color: var(--color-hive-950);
-  color: var(--color-hive-200);
+  background-color: var(--surface-950);
+  color: var(--surface-200);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   overscroll-behavior-y: none;
 }

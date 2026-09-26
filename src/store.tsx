@@ -1,7 +1,7 @@
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useReducer } from 'react'
 import { createId } from '@/lib/id'
 import { emptyState, loadState, saveState } from '@/lib/storage'
-import type { BattleState, Fighter, Flag } from '@/types'
+import type { BattleState, Condition, Fighter, Flag, RuleSet, Theme } from '@/types'
 
 type Action =
   | { type: 'add'; name: string; maxWounds: number }
@@ -9,8 +9,11 @@ type Action =
   | { type: 'rename'; id: string; name: string }
   | { type: 'setMaxWounds'; id: string; maxWounds: number }
   | { type: 'adjustWounds'; id: string; delta: number }
-  | { type: 'setWounds'; id: string; wounds: number }
   | { type: 'toggle'; id: string; flag: Flag }
+  | { type: 'setCondition'; id: string; condition: Condition }
+  | { type: 'adjustFleshWounds'; id: string; delta: number }
+  | { type: 'setRules'; rules: RuleSet }
+  | { type: 'setTheme'; theme: Theme }
   | { type: 'newTurn' }
   | { type: 'resetBattle' }
   | { type: 'clearAll' }
@@ -19,27 +22,32 @@ function mapFighter(state: BattleState, id: string, fn: (f: Fighter) => Fighter)
   return { ...state, fighters: state.fighters.map((f) => (f.id === id ? fn(f) : f)) }
 }
 
-/** Wounds at zero always means the fighter is down. */
+/**
+ * A fighter reduced to zero wounds is taken down by default — that is the
+ * likeliest Injury dice result. Swap it for a flesh wound or out of action
+ * once the dice is actually read.
+ */
 function applyWounds(fighter: Fighter, wounds: number): Fighter {
   const clamped = Math.max(0, Math.min(fighter.maxWounds, Math.round(wounds)))
-  return { ...fighter, wounds: clamped, injured: clamped === 0 ? true : fighter.injured }
+  const condition =
+    clamped === 0 && fighter.wounds > 0 && fighter.condition === 'ok' ? 'down' : fighter.condition
+  return { ...fighter, wounds: clamped, condition }
 }
 
-function toggleFlag(fighter: Fighter, flag: Flag, turn: number): Fighter {
+function toggleFlag(fighter: Fighter, flag: Flag, state: BattleState): Fighter {
   switch (flag) {
     case 'outOfAmmo':
       return { ...fighter, outOfAmmo: !fighter.outOfAmmo }
 
-    case 'injured':
-      return { ...fighter, injured: !fighter.injured }
-
     case 'activated': {
-      // Note the turn a suppressed fighter activates, so New Turn can clear it.
       const activated = !fighter.activated
+      // N18: standing up is the activation, so suppression lifts there and then.
+      const clears = state.rules === 'n18' && activated && fighter.suppressed
       return {
         ...fighter,
         activated,
-        suppressedActivatedTurn: activated && fighter.suppressed ? turn : null,
+        suppressed: clears ? false : fighter.suppressed,
+        suppressedSinceTurn: clears ? null : fighter.suppressedSinceTurn,
       }
     }
 
@@ -48,10 +56,22 @@ function toggleFlag(fighter: Fighter, flag: Flag, turn: number): Fighter {
       return {
         ...fighter,
         suppressed,
-        suppressedActivatedTurn: suppressed && fighter.activated ? turn : null,
+        suppressedSinceTurn: suppressed ? state.turn : null,
       }
     }
   }
+}
+
+/**
+ * LRB p.12: a fighter pinned at the start of a turn misses that turn and stands
+ * up at the end of it. So suppression applied during turn N is still in play for
+ * the whole of turn N+1, and clears as turn N+1 ends.
+ */
+export function clearsThisTurn(fighter: Fighter, rules: RuleSet, turn: number): boolean {
+  if (rules !== 'lrb') return false
+  return (
+    fighter.suppressed && fighter.suppressedSinceTurn !== null && fighter.suppressedSinceTurn < turn
+  )
 }
 
 export function reducer(state: BattleState, action: Action): BattleState {
@@ -66,8 +86,9 @@ export function reducer(state: BattleState, action: Action): BattleState {
         activated: false,
         suppressed: false,
         outOfAmmo: false,
-        injured: false,
-        suppressedActivatedTurn: null,
+        condition: 'ok',
+        fleshWounds: 0,
+        suppressedSinceTurn: null,
       }
       return { ...state, fighters: [...state.fighters, fighter] }
     }
@@ -87,25 +108,38 @@ export function reducer(state: BattleState, action: Action): BattleState {
     case 'adjustWounds':
       return mapFighter(state, action.id, (f) => applyWounds(f, f.wounds + action.delta))
 
-    case 'setWounds':
-      return mapFighter(state, action.id, (f) => applyWounds(f, action.wounds))
-
     case 'toggle':
-      return mapFighter(state, action.id, (f) => toggleFlag(f, action.flag, state.turn))
+      return mapFighter(state, action.id, (f) => toggleFlag(f, action.flag, state))
+
+    case 'setCondition':
+      return mapFighter(state, action.id, (f) => ({
+        ...f,
+        condition: f.condition === action.condition ? 'ok' : action.condition,
+      }))
+
+    case 'adjustFleshWounds':
+      return mapFighter(state, action.id, (f) => ({
+        ...f,
+        fleshWounds: Math.max(0, f.fleshWounds + action.delta),
+      }))
+
+    case 'setRules':
+      return { ...state, rules: action.rules }
+
+    case 'setTheme':
+      return { ...state, theme: action.theme }
 
     case 'newTurn':
       return {
         ...state,
         turn: state.turn + 1,
         fighters: state.fighters.map((f) => {
-          // A suppressed fighter that activated this turn has now spent a full
-          // turn active, so the suppression lifts.
-          const clears = f.suppressed && f.suppressedActivatedTurn !== null
+          const recovers = clearsThisTurn(f, state.rules, state.turn)
           return {
             ...f,
             activated: false,
-            suppressed: clears ? false : f.suppressed,
-            suppressedActivatedTurn: null,
+            suppressed: recovers ? false : f.suppressed,
+            suppressedSinceTurn: recovers ? null : f.suppressedSinceTurn,
           }
         }),
       }
@@ -120,13 +154,14 @@ export function reducer(state: BattleState, action: Action): BattleState {
           activated: false,
           suppressed: false,
           outOfAmmo: false,
-          injured: false,
-          suppressedActivatedTurn: null,
+          condition: 'ok',
+          fleshWounds: 0,
+          suppressedSinceTurn: null,
         })),
       }
 
     case 'clearAll':
-      return emptyState
+      return { ...emptyState, rules: state.rules, theme: state.theme }
 
     default:
       return state

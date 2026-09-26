@@ -1,32 +1,53 @@
 # Necromunda Gang Tracker
 
-Offline-first table-side tracker for a Necromunda gang: wounds, activation,
-and status flags for each fighter, plus a round counter.
+**→ [lukehmu.github.io/necromunda-app](https://lukehmu.github.io/necromunda-app/)**
 
-Installable as a PWA — open it on a phone and use "Add to Home Screen" to get
-a full-screen app that works with no signal in the basement of a hive.
+Offline-first table-side tracker for a Necromunda gang: wounds, activation,
+injuries and status flags per fighter, plus a round counter.
+
+Installable as a PWA — open the link on a phone and use "Add to Home Screen"
+to get a full-screen app that works with no signal.
 
 ## What it tracks
 
-- **Fighters** — name and total wounds, added on the fly.
-- **Wounds** — `−` / `+` buttons, with an editable total.
-- **Flags** — Activated, Suppressed, No ammo, Injured.
-- **Round** — "New turn" bumps the round counter.
+- **Fighters** — name and total wounds, added on the fly. Most fighters have
+  1 wound; leaders and veterans may have 2 or more, so the total is editable
+  per fighter.
+- **Wounds** — `−` / `+` buttons. In a game wounds only ever go *down*; the
+  `+` is for undoing a mistap, not healing.
+- **Flags** — Activated, Suppressed, No ammo.
+- **Injury** — Flesh wounds (stacking, each `-1` WS/BS), Down, Out of action.
+- **Round** — "New turn" bumps the counter and clears every activation.
 
 Everything lives in `localStorage` on the device. No accounts, no sync.
 
-## The two automatic rules
+## The automatic rules
 
-1. A fighter dropped to **0 wounds** is flagged **Injured** automatically.
-   Healing them back up leaves the flag set — clear it by hand when they
-   recover.
-2. **Suppression** clears at the start of the next turn, but only for fighters
-   that actually **activated** while suppressed. A suppressed fighter who never
-   activated stays suppressed. The card shows "Suppression lifts at the start of
-   the next turn" once that is locked in.
+1. A fighter dropped to **0 wounds** is marked **Down** — the likeliest Injury
+   dice result. Switch it to a flesh wound or out of action once the dice is
+   read.
+2. **Out of action** fighters are dimmed and drop out of the "still to
+   activate" count.
+3. **Suppression** clears on its own, by whichever edition's rule is selected
+   in Settings (see below).
 
-Nothing else is enforced: the app does not know the rulebook, so it will happily
-let you do whatever the table agrees on.
+Nothing else is enforced. The app does not know the rulebook, so it will
+happily let you do whatever the table agrees on.
+
+### Suppression recovery, per edition
+
+Settings has a toggle, because the two rulesets genuinely differ:
+
+- **Classic LRB** (rulebook p.12) — a fighter pinned at the start of a turn
+  *misses that turn* and stands up automatically at the end of it. Recovery
+  has nothing to do with activating. So suppression applied during turn N is
+  still in play throughout turn N+1, and lifts as turn N+1 ends.
+- **N18** — a pinned fighter is Prone, and clears the condition by spending an
+  activation on a Stand Up action. So marking them Activated lifts it
+  immediately.
+
+The LRB's early escapes (auto-recovery when engaged in melee, or an Initiative
+check with a friendly within 2") are left manual — untoggle by hand.
 
 ## Development
 
@@ -44,16 +65,14 @@ Git hooks (lefthook):
 - **pre-commit** — biome check/format on staged files, plus a typecheck.
 - **pre-push** — full production build.
 
-## Deploying to GitHub Pages
+## Deploying
 
-`.github/workflows/deploy.yml` builds and publishes `dist/` on every push to
-`main`. Enable it once in **Settings → Pages → Build and deployment → Source:
-GitHub Actions**.
+`.github/workflows/deploy.yml` builds and publishes `dist/` to GitHub Pages on
+every push to `main`. Pages is set to the "GitHub Actions" source.
 
-The build is served from a subpath, so `vite.config.ts` sets `base` from the
-`BASE_PATH` env var (the workflow passes `/<repo-name>/`, and the local default
-is `/necromunda-app/`). If the repository is renamed, nothing needs changing —
-the workflow derives the path from the repository name.
+The site is served from a subpath, so `vite.config.ts` sets `base` from the
+`BASE_PATH` env var — the workflow passes `/<repo-name>/`, so renaming the
+repository needs no code change.
 
 ## Stack
 
