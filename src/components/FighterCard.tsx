@@ -1,18 +1,16 @@
 import {
-  ArrowFatLinesDownIcon,
   CrosshairSimpleIcon,
-  DropIcon,
+  FirstAidIcon,
   LightningIcon,
   MinusIcon,
   PlusIcon,
   ProhibitIcon,
-  SkullIcon,
   TrashIcon,
   XIcon,
 } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { Toggle } from '@/components/Toggle'
-import { clearsThisTurn, useStore } from '@/store'
+import { useStore } from '@/store'
 import type { Fighter } from '@/types'
 
 /** Beyond this many wounds a pip row stops being readable at a glance. */
@@ -118,23 +116,12 @@ function RemoveButton({ name, onRemove }: { name: string; onRemove: () => void }
 }
 
 export function FighterCard({ fighter }: { fighter: Fighter }) {
-  const { state, dispatch } = useStore()
+  const { dispatch } = useStore()
   const zero = fighter.wounds === 0
-  const out = fighter.condition === 'out'
-  const recovering = clearsThisTurn(fighter, state.rules, state.turn)
-
-  const suppressionHint =
-    state.rules === 'n18'
-      ? 'Prone. Activating them stands them up.'
-      : recovering
-        ? 'Misses this turn. Stands up when it ends.'
-        : 'Stands up at the end of next turn.'
 
   return (
     <li
-      className={`plate px-4 pt-3 pb-4 transition-opacity ${
-        out ? 'opacity-45 grayscale' : fighter.activated ? 'opacity-70' : ''
-      }`}
+      className={`plate px-4 pt-3 pb-4 transition-opacity ${fighter.activated ? 'opacity-70' : ''}`}
     >
       <div className="flex items-center gap-2 pl-2">
         <input
@@ -143,11 +130,6 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
           onChange={(e) => dispatch({ type: 'rename', id: fighter.id, name: e.target.value })}
           className="min-w-0 flex-1 rounded-[2px] bg-transparent py-1 font-condensed text-xl font-bold tracking-wide text-hive-200 uppercase outline-none focus:bg-hive-800"
         />
-        {out && (
-          <span className="font-condensed text-sm font-bold tracking-widest text-blood uppercase">
-            Out of action
-          </span>
-        )}
         <RemoveButton
           name={fighter.name}
           onRemove={() => dispatch({ type: 'remove', id: fighter.id })}
@@ -204,7 +186,7 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
         </StepButton>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <div className="mt-4 grid grid-cols-2 gap-2">
         <Toggle
           label="Activated"
           icon={LightningIcon}
@@ -226,49 +208,19 @@ export function FighterCard({ fighter }: { fighter: Fighter }) {
           active={fighter.outOfAmmo}
           onToggle={() => dispatch({ type: 'toggle', id: fighter.id, flag: 'outOfAmmo' })}
         />
-      </div>
-
-      <div className="mt-2 grid grid-cols-3 gap-2">
         <Toggle
-          label={fighter.fleshWounds > 0 ? `Flesh ×${fighter.fleshWounds}` : 'Flesh'}
-          icon={DropIcon}
+          label="Injured"
+          icon={FirstAidIcon}
           tone="blood"
-          active={fighter.fleshWounds > 0}
-          onToggle={() => dispatch({ type: 'adjustFleshWounds', id: fighter.id, delta: 1 })}
-        />
-        <Toggle
-          label="Down"
-          icon={ArrowFatLinesDownIcon}
-          tone="blood"
-          active={fighter.condition === 'down'}
-          onToggle={() => dispatch({ type: 'setCondition', id: fighter.id, condition: 'down' })}
-        />
-        <Toggle
-          label="Out"
-          icon={SkullIcon}
-          tone="blood-solid"
-          active={out}
-          onToggle={() => dispatch({ type: 'setCondition', id: fighter.id, condition: 'out' })}
+          active={fighter.injured}
+          onToggle={() => dispatch({ type: 'toggle', id: fighter.id, flag: 'injured' })}
         />
       </div>
 
-      {!out && (fighter.fleshWounds > 0 || fighter.suppressed) && (
-        <ul className="mt-3 space-y-1 border-t border-hive-700 pt-2 text-sm">
-          {fighter.fleshWounds > 0 && (
-            <li className="flex items-center gap-3 text-blood">
-              <span className="flex-1">-{fighter.fleshWounds} WS and BS from flesh wounds.</span>
-              <button
-                type="button"
-                onClick={() => dispatch({ type: 'adjustFleshWounds', id: fighter.id, delta: -1 })}
-                className="press flex min-h-9 shrink-0 items-center gap-1 rounded-[2px] border border-blood/50 px-2 font-condensed text-xs font-bold tracking-wider uppercase active:bg-blood/10"
-              >
-                <MinusIcon aria-hidden size={12} weight="bold" />
-                Remove one
-              </button>
-            </li>
-          )}
-          {fighter.suppressed && <li className="text-toxin">{suppressionHint}</li>}
-        </ul>
+      {fighter.suppressed && (
+        <p className="mt-3 border-t border-hive-700 pt-2 text-sm text-toxin">
+          Only 1 action when activated. Clears once they have.
+        </p>
       )}
     </li>
   )

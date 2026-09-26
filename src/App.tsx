@@ -1,7 +1,6 @@
 import { CaretDownIcon, GearSixIcon } from '@phosphor-icons/react'
 import { AddFighterForm } from '@/components/AddFighterForm'
 import { FighterCard } from '@/components/FighterCard'
-import { RulesToggle } from '@/components/RulesToggle'
 import { ThemeToggle, useAppliedTheme } from '@/components/ThemeToggle'
 import { TurnBar } from '@/components/TurnBar'
 import { useStore } from '@/store'
@@ -46,7 +45,6 @@ export default function App() {
           </summary>
 
           <div className="space-y-5 border-t border-hive-700 px-5 pt-4 pb-5">
-            <RulesToggle />
             <ThemeToggle />
 
             <div className="grid grid-cols-2 gap-2 border-t border-hive-700 pt-4">

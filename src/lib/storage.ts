@@ -1,44 +1,35 @@
-import type { BattleState, Condition, Fighter, RuleSet, Theme } from '@/types'
+import type { BattleState, Fighter, Theme } from '@/types'
 
 const KEY = 'necromunda-tracker'
 
-export const emptyState: BattleState = {
-  version: 3,
-  rules: 'lrb',
-  theme: 'system',
-  turn: 1,
-  fighters: [],
-}
+export const emptyState: BattleState = { version: 4, theme: 'system', turn: 1, fighters: [] }
 
 function num(value: unknown, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
 }
 
-/** Tolerate partial fighters, and v1/v2 ones that only had an `injured` flag. */
+/**
+ * Tolerate partial fighters and every earlier shape. v3 tracked
+ * `condition` ('ok' | 'down' | 'out') and flesh wounds; any injury there
+ * collapses to the single `injured` flag.
+ */
 function normaliseFighter(raw: unknown): Fighter | null {
   if (!raw || typeof raw !== 'object') return null
   const f = raw as Record<string, unknown>
   if (typeof f.id !== 'string' || typeof f.name !== 'string') return null
 
   const maxWounds = Math.max(1, Math.round(num(f.maxWounds, 1)))
-  const condition: Condition =
-    f.condition === 'down' || f.condition === 'out'
-      ? f.condition
-      : f.injured === true
-        ? 'down'
-        : 'ok'
+  const wounds = Math.max(0, Math.min(maxWounds, Math.round(num(f.wounds, maxWounds))))
 
   return {
     id: f.id,
     name: f.name,
     maxWounds,
-    wounds: Math.max(0, Math.min(maxWounds, Math.round(num(f.wounds, maxWounds)))),
+    wounds,
     activated: f.activated === true,
     suppressed: f.suppressed === true,
     outOfAmmo: f.outOfAmmo === true,
-    condition,
-    fleshWounds: Math.max(0, Math.round(num(f.fleshWounds, 0))),
-    suppressedSinceTurn: typeof f.suppressedSinceTurn === 'number' ? f.suppressedSinceTurn : null,
+    injured: f.injured === true || f.condition === 'down' || f.condition === 'out' || wounds === 0,
   }
 }
 
@@ -49,13 +40,11 @@ export function loadState(): BattleState {
     const parsed = JSON.parse(raw) as Record<string, unknown>
     if (!Array.isArray(parsed.fighters)) return emptyState
 
-    const rules: RuleSet = parsed.rules === 'n18' ? 'n18' : 'lrb'
     const theme: Theme =
       parsed.theme === 'light' || parsed.theme === 'dark' ? parsed.theme : 'system'
 
     return {
-      version: 3,
-      rules,
+      version: 4,
       theme,
       turn: Math.max(1, Math.round(num(parsed.turn, 1))),
       fighters: parsed.fighters.map(normaliseFighter).filter((f): f is Fighter => f !== null),
@@ -69,6 +58,6 @@ export function saveState(state: BattleState): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(state))
   } catch {
-    // Storage full or unavailable (private mode) — tracking still works in memory.
+    // Storage full or unavailable (private mode): tracking still works in memory.
   }
 }

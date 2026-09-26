@@ -10,44 +10,29 @@ to get a full-screen app that works with no signal.
 
 ## What it tracks
 
-- **Fighters** — name and total wounds, added on the fly. Most fighters have
+- **Fighters**: name and total wounds, added on the fly. Most fighters have
   1 wound; leaders and veterans may have 2 or more, so the total is editable
   per fighter.
-- **Wounds** — `−` / `+` buttons. In a game wounds only ever go *down*; the
-  `+` is for undoing a mistap, not healing.
-- **Flags** — Activated, Suppressed, No ammo.
-- **Injury** — Flesh wounds (stacking, each `-1` WS/BS), Down, Out of action.
-- **Round** — "New turn" bumps the counter and clears every activation.
+- **Wounds**: `-` / `+` buttons, with pips alongside the number.
+- **Flags**: Activated, Suppressed, No ammo, Injured.
+- **Round**: "New turn" bumps the counter and clears every activation.
 
 Everything lives in `localStorage` on the device. No accounts, no sync.
 
 ## The automatic rules
 
-1. A fighter dropped to **0 wounds** is marked **Down** — the likeliest Injury
-   dice result. Switch it to a flesh wound or out of action once the dice is
-   read.
-2. **Out of action** fighters are dimmed and drop out of the "still to
-   activate" count.
-3. **Suppression** clears on its own, by whichever edition's rule is selected
-   in Settings (see below).
+Written against the Necromunda (2026) rules:
 
-Nothing else is enforced. The app does not know the rulebook, so it will
-happily let you do whatever the table agrees on.
+1. **Injured** means being on 0 wounds. Dropping to 0 sets it; getting a
+   wound back (a Medicae, say) clears it. Being knocked down or seriously
+   injured is shown by the model on the table, so the app does not track it.
+2. **Suppressed** fighters only get 1 action when they activate, and recover
+   at the end of that activation. So marking a suppressed fighter Activated
+   clears it. A suppressed fighter who has not activated yet stays suppressed
+   through a new turn.
 
-### Suppression recovery, per edition
-
-Settings has a toggle, because the two rulesets genuinely differ:
-
-- **Classic LRB** (rulebook p.12) — a fighter pinned at the start of a turn
-  *misses that turn* and stands up automatically at the end of it. Recovery
-  has nothing to do with activating. So suppression applied during turn N is
-  still in play throughout turn N+1, and lifts as turn N+1 ends.
-- **N18** — a pinned fighter is Prone, and clears the condition by spending an
-  activation on a Stand Up action. So marking them Activated lifts it
-  immediately.
-
-The LRB's early escapes (auto-recovery when engaged in melee, or an Initiative
-check with a friendly within 2") are left manual — untoggle by hand.
+Anything else (being charged also clears suppression, reloading, and so on)
+is a manual toggle.
 
 ## Development
 

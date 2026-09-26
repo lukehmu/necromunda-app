@@ -1,12 +1,11 @@
 import type { Icon } from '@phosphor-icons/react'
 
-export type Tone = 'hazard' | 'toxin' | 'blood' | 'steel' | 'blood-solid'
+export type Tone = 'hazard' | 'toxin' | 'blood' | 'steel'
 
 const ON: Record<Tone, string> = {
   hazard: 'border-hazard text-hazard bg-hazard/12',
   toxin: 'border-toxin text-toxin bg-toxin/12',
   blood: 'border-blood text-blood bg-blood/12',
-  'blood-solid': 'border-blood bg-blood text-hive-950',
   steel: 'border-hive-400 text-hive-200 bg-hive-600/40',
 }
 
@@ -15,7 +14,6 @@ const LAMP: Record<Tone, string> = {
   hazard: 'bg-hazard',
   toxin: 'bg-toxin',
   blood: 'bg-blood',
-  'blood-solid': 'bg-hive-950',
   steel: 'bg-hive-200',
 }
 

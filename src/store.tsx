@@ -1,7 +1,7 @@
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useReducer } from 'react'
 import { createId } from '@/lib/id'
 import { emptyState, loadState, saveState } from '@/lib/storage'
-import type { BattleState, Condition, Fighter, Flag, RuleSet, Theme } from '@/types'
+import type { BattleState, Fighter, Flag, Theme } from '@/types'
 
 type Action =
   | { type: 'add'; name: string; maxWounds: number }
@@ -10,9 +10,6 @@ type Action =
   | { type: 'setMaxWounds'; id: string; maxWounds: number }
   | { type: 'adjustWounds'; id: string; delta: number }
   | { type: 'toggle'; id: string; flag: Flag }
-  | { type: 'setCondition'; id: string; condition: Condition }
-  | { type: 'adjustFleshWounds'; id: string; delta: number }
-  | { type: 'setRules'; rules: RuleSet }
   | { type: 'setTheme'; theme: Theme }
   | { type: 'newTurn' }
   | { type: 'resetBattle' }
@@ -23,55 +20,26 @@ function mapFighter(state: BattleState, id: string, fn: (f: Fighter) => Fighter)
 }
 
 /**
- * A fighter reduced to zero wounds is taken down by default — that is the
- * likeliest Injury dice result. Swap it for a flesh wound or out of action
- * once the dice is actually read.
+ * Injured is defined as being on zero wounds (2026 quick reference), so it
+ * follows the wound count across zero in both directions. It only changes on
+ * those transitions, so a manual toggle is not undone by unrelated edits.
  */
 function applyWounds(fighter: Fighter, wounds: number): Fighter {
   const clamped = Math.max(0, Math.min(fighter.maxWounds, Math.round(wounds)))
-  const condition =
-    clamped === 0 && fighter.wounds > 0 && fighter.condition === 'ok' ? 'down' : fighter.condition
-  return { ...fighter, wounds: clamped, condition }
+  let injured = fighter.injured
+  if (clamped === 0 && fighter.wounds > 0) injured = true
+  else if (clamped > 0 && fighter.wounds === 0) injured = false
+  return { ...fighter, wounds: clamped, injured }
 }
 
-function toggleFlag(fighter: Fighter, flag: Flag, state: BattleState): Fighter {
-  switch (flag) {
-    case 'outOfAmmo':
-      return { ...fighter, outOfAmmo: !fighter.outOfAmmo }
-
-    case 'activated': {
-      const activated = !fighter.activated
-      // N18: standing up is the activation, so suppression lifts there and then.
-      const clears = state.rules === 'n18' && activated && fighter.suppressed
-      return {
-        ...fighter,
-        activated,
-        suppressed: clears ? false : fighter.suppressed,
-        suppressedSinceTurn: clears ? null : fighter.suppressedSinceTurn,
-      }
-    }
-
-    case 'suppressed': {
-      const suppressed = !fighter.suppressed
-      return {
-        ...fighter,
-        suppressed,
-        suppressedSinceTurn: suppressed ? state.turn : null,
-      }
-    }
+function toggleFlag(fighter: Fighter, flag: Flag): Fighter {
+  if (flag === 'activated') {
+    const activated = !fighter.activated
+    // Suppression costs one action and lifts at the end of the activation, so
+    // marking the fighter activated is the moment it clears.
+    return { ...fighter, activated, suppressed: activated ? false : fighter.suppressed }
   }
-}
-
-/**
- * LRB p.12: a fighter pinned at the start of a turn misses that turn and stands
- * up at the end of it. So suppression applied during turn N is still in play for
- * the whole of turn N+1, and clears as turn N+1 ends.
- */
-export function clearsThisTurn(fighter: Fighter, rules: RuleSet, turn: number): boolean {
-  if (rules !== 'lrb') return false
-  return (
-    fighter.suppressed && fighter.suppressedSinceTurn !== null && fighter.suppressedSinceTurn < turn
-  )
+  return { ...fighter, [flag]: !fighter[flag] }
 }
 
 export function reducer(state: BattleState, action: Action): BattleState {
@@ -86,9 +54,7 @@ export function reducer(state: BattleState, action: Action): BattleState {
         activated: false,
         suppressed: false,
         outOfAmmo: false,
-        condition: 'ok',
-        fleshWounds: 0,
-        suppressedSinceTurn: null,
+        injured: false,
       }
       return { ...state, fighters: [...state.fighters, fighter] }
     }
@@ -109,22 +75,7 @@ export function reducer(state: BattleState, action: Action): BattleState {
       return mapFighter(state, action.id, (f) => applyWounds(f, f.wounds + action.delta))
 
     case 'toggle':
-      return mapFighter(state, action.id, (f) => toggleFlag(f, action.flag, state))
-
-    case 'setCondition':
-      return mapFighter(state, action.id, (f) => ({
-        ...f,
-        condition: f.condition === action.condition ? 'ok' : action.condition,
-      }))
-
-    case 'adjustFleshWounds':
-      return mapFighter(state, action.id, (f) => ({
-        ...f,
-        fleshWounds: Math.max(0, f.fleshWounds + action.delta),
-      }))
-
-    case 'setRules':
-      return { ...state, rules: action.rules }
+      return mapFighter(state, action.id, (f) => toggleFlag(f, action.flag))
 
     case 'setTheme':
       return { ...state, theme: action.theme }
@@ -133,15 +84,7 @@ export function reducer(state: BattleState, action: Action): BattleState {
       return {
         ...state,
         turn: state.turn + 1,
-        fighters: state.fighters.map((f) => {
-          const recovers = clearsThisTurn(f, state.rules, state.turn)
-          return {
-            ...f,
-            activated: false,
-            suppressed: recovers ? false : f.suppressed,
-            suppressedSinceTurn: recovers ? null : f.suppressedSinceTurn,
-          }
-        }),
+        fighters: state.fighters.map((f) => ({ ...f, activated: false })),
       }
 
     case 'resetBattle':
@@ -154,14 +97,12 @@ export function reducer(state: BattleState, action: Action): BattleState {
           activated: false,
           suppressed: false,
           outOfAmmo: false,
-          condition: 'ok',
-          fleshWounds: 0,
-          suppressedSinceTurn: null,
+          injured: false,
         })),
       }
 
     case 'clearAll':
-      return { ...emptyState, rules: state.rules, theme: state.theme }
+      return { ...emptyState, theme: state.theme }
 
     default:
       return state

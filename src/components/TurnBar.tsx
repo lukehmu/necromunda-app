@@ -3,8 +3,7 @@ import { useStore } from '@/store'
 
 export function TurnBar() {
   const { state, dispatch } = useStore()
-  // Fighters who are out of action have nothing left to activate.
-  const inPlay = state.fighters.filter((f) => f.condition !== 'out')
+  const inPlay = state.fighters
   const pending = inPlay.filter((f) => !f.activated).length
 
   const status =

@@ -25,13 +25,12 @@ A single-screen React SPA with no router. All state lives in one reducer.
 
 - `src/store.tsx` — the whole application. A `useReducer` over `BattleState`,
   exposed through `StoreProvider` / `useStore`. **All game rules live in this
-  reducer**; components only dispatch. `clearsThisTurn` is exported because the
-  card UI needs to show the same recovery prediction the reducer will act on.
+  reducer**; components only dispatch.
 - `src/lib/storage.ts` — persistence. The entire state is one JSON blob in
   `localStorage` under `necromunda-tracker`. `normaliseFighter` is the migration
-  path: it coerces partial or older-version fighters (v1/v2 had a boolean
-  `injured` instead of `condition` + `fleshWounds`) rather than versioning
-  migrations separately. **Bump `BattleState['version']` and extend
+  path: it coerces partial or older-version fighters rather than versioning
+  migrations separately (v3 had `condition` + `fleshWounds` and a `rules`
+  setting; they collapse into the single `injured` flag). **Bump `BattleState['version']` and extend
   `normaliseFighter` together when the fighter shape changes**, or existing
   users lose their roster.
 - `src/components/` — presentational, each reads `useStore()` directly. No prop
@@ -40,22 +39,21 @@ A single-screen React SPA with no router. All state lives in one reducer.
 
 ### Game rules encoded in the reducer
 
-Two deliberately automated rules, everything else is manual toggling:
+Rules follow **Necromunda (2026)**. Its quick reference defines them; the
+classic LRB and N18 books differ, so do not reintroduce their pinning rules.
+Two rules are automated, everything else is a manual toggle:
 
-1. Dropping a fighter to 0 wounds sets `condition: 'down'` (the likeliest
-   Injury dice result), only on the transition to zero — so a manual change to
-   flesh wound or out of action is not clobbered by further wound edits.
-2. Suppression recovery, which differs by edition and is selectable at runtime
-   via `state.rules`:
-   - `lrb` — classic Living Rulebook p.12. Pinned at the start of a turn means
-     the fighter misses that turn and stands up at its end, *regardless of
-     activation*. Implemented by stamping `suppressedSinceTurn` and clearing on
-     the `newTurn` after that (`suppressedSinceTurn < turn`).
-   - `n18` — pinned is Prone and cleared by a Stand Up action, so toggling
-     `activated` on clears it immediately.
+1. `injured` is "on zero wounds". `applyWounds` sets it when wounds reach 0 and
+   clears it when they rise above 0, only on those transitions, so a manual
+   toggle is not undone by unrelated edits. Down / seriously injured is shown
+   on the table and deliberately not tracked.
+2. Suppressed costs one action and lifts at the end of the fighter's
+   activation, so `toggleFlag` clears `suppressed` when `activated` turns on.
+   `newTurn` only resets activations.
 
-   Changing either rule means changing `toggleFlag` and `clearsThisTurn`
-   together, plus the hint text in `FighterCard`.
+The app was deliberately simplified after feedback from the player it is
+built for: prefer fewer toggles over modelling dice outcomes the table already
+shows.
 
 ### Theming and visual language
 
