@@ -57,6 +57,42 @@ export const t = {
     injured: "Can't use skills. Clears if they get a wound back.",
   },
 
+  rules: {
+    title: 'Rules',
+    intro: 'What the tracker does by itself. Everything else is a manual toggle.',
+    items: {
+      newTurn: {
+        term: 'New turn',
+        body: "Clears every fighter's activation and moves the round on. Nothing else changes.",
+      },
+      activated: {
+        term: 'Activated',
+        body: 'Mark a fighter once they have taken their actions. Activated fighters dim, and the header counts who is left.',
+      },
+      suppressed: {
+        term: 'Suppressed',
+        body: 'Only 1 action when activated. Clears the moment you mark them Activated, not at the end of the turn. Being charged clears it too: untick it by hand.',
+      },
+      injured: {
+        term: 'Injured',
+        body: "Switches on when wounds reach 0 and off when a wound comes back. Can't use skills. Knocked down and seriously injured are shown by the model on the table, so they aren't tracked.",
+      },
+      outOfAmmo: {
+        term: 'No ammo',
+        body: "Manual. That weapon can't shoot until it is reloaded with a Reload action.",
+      },
+      wounds: {
+        term: 'Wounds',
+        body: 'Use − as they are lost. + is for regaining a wound, or undoing a mistap.',
+      },
+      newBattle: {
+        term: 'New battle',
+        body: 'Restores every wound, clears all flags and resets the round to 1. The roster is kept.',
+      },
+    },
+    source: 'Based on the Necromunda (2026) rules and the September 2026 FAQ. Unofficial fan tool.',
+  },
+
   settings: {
     title: 'Settings',
     theme: 'Theme',

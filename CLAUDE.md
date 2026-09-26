@@ -57,6 +57,9 @@ Two rules are automated, everything else is a manual toggle:
    activation, so `toggleFlag` clears `suppressed` when `activated` turns on.
    `newTurn` only resets activations.
 
+The in-app **Rules** panel (`RulesPanel.tsx`, copy in `t.rules`) is the
+player-facing summary of this logic. Any rule change must update it too.
+
 The app was deliberately simplified after feedback from the player it is
 built for: prefer fewer toggles over modelling dice outcomes the table already
 shows.

@@ -1,7 +1,9 @@
-import { ArrowUpRightIcon, CaretDownIcon, GearSixIcon, GithubLogoIcon } from '@phosphor-icons/react'
+import { ArrowUpRightIcon, GearSixIcon, GithubLogoIcon } from '@phosphor-icons/react'
 import { AddFighterForm } from '@/components/AddFighterForm'
 import { ConfirmButton } from '@/components/ConfirmButton'
 import { FighterCard } from '@/components/FighterCard'
+import { Panel } from '@/components/Panel'
+import { RulesPanel } from '@/components/RulesPanel'
 import { ThemeToggle, useAppliedTheme } from '@/components/ThemeToggle'
 import { TurnBar } from '@/components/TurnBar'
 import { t } from '@/i18n/en'
@@ -32,19 +34,10 @@ export default function App() {
           </ul>
         )}
 
-        <details className="group plate">
-          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-5 font-condensed text-sm font-bold tracking-[0.16em] text-hive-400 uppercase [&::-webkit-details-marker]:hidden">
-            <GearSixIcon aria-hidden size={18} weight="bold" />
-            {t.settings.title}
-            <CaretDownIcon
-              aria-hidden
-              size={16}
-              weight="bold"
-              className="ml-auto transition-transform group-open:rotate-180"
-            />
-          </summary>
+        <RulesPanel />
 
-          <div className="space-y-5 border-t border-hive-700 px-5 pt-4 pb-5">
+        <Panel icon={GearSixIcon} title={t.settings.title}>
+          <div className="space-y-5">
             <ThemeToggle />
 
             <div className="space-y-2 border-t border-hive-700 pt-4">
@@ -77,7 +70,7 @@ export default function App() {
               <ArrowUpRightIcon aria-hidden size={14} weight="bold" />
             </a>
           </div>
-        </details>
+        </Panel>
       </main>
     </div>
   )
