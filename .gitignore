@@ -7,3 +7,5 @@ dev-dist
 .vite
 *.tsbuildinfo
 .wrangler
+.env
+.dev.vars
